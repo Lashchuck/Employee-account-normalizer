@@ -9,7 +9,7 @@ input_file="$1"
 output_file="accounts_new.csv"
 
 format_name() {
-  echo "$1" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2));}1'
+  echo "$1" | awk -F, '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2));}1'
 }
 
 generate_email(){
@@ -19,16 +19,20 @@ generate_email(){
   echo "${name:0:1}${surname,,}${location_id}@abc.com"
 }
 
+# Create or clear the output file
+> "$output_file"
+
 while IFS=, read -r id location name title email department
 do
   if [[ "$id" == "id" ]]; then
     continue
   fi
 
+  # Extract first name and surname
   first_name="${name%% *}"
   surname="${name##* }"
 
-  formatted_name=$(format_name "$first_name $surname")
+  formatted_name=$(format_name "$first_name,$surname")
   email=$(generate_email "$first_name" "$surname" "$location")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
