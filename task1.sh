@@ -18,8 +18,11 @@ generate_email(){
   local location_id="$3"
   local formatted_name="${name:0:1}${surname,,}"
 
-    # Zmienia całą część imienia i nazwiska na małe litery
-    echo "${formatted_name,,}${location_id}@abc.com"
+    if [ "$location_id" -gt 0 ]; then
+        echo "${formatted_name,,}${location_id}@abc.com"
+      else
+        echo "${formatted_name,,}@abc.com"
+      fi
 }
 
 # Create or clear the output file
