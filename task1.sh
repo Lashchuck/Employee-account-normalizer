@@ -16,9 +16,10 @@ generate_email(){
   local name="$1"
   local surname="$2"
   local location_id="$3"
+  local count="$4"
   local formatted_name="${name:0:1}${surname,,}"
 
-    if [ "$location_id" -gt 0 ]; then
+    if [ "$count" -gt 1 ]; then
         echo "${formatted_name,,}${location_id}@abc.com"
       else
         echo "${formatted_name,,}@abc.com"
@@ -27,6 +28,16 @@ generate_email(){
 
 # Create or clear the output file
 > "$output_file"
+
+declare -A name_count
+while IFS=, read -r id location name title email department; do
+  if [[ "$id" == "id" ]]; then
+    continue
+  fi
+
+  full_name="${name,,}" # Klucz do sprawdzenia liczby wystąpień
+  name_count["$full_name"]=$((name_count["$full_name"] + 1))
+done < "$input_file"
 
 while IFS=, read -r id location name title email department
 do
@@ -37,9 +48,10 @@ do
   # Extract first name and surname
   first_name="${name%% *}"
   surname="${name##* }"
+  count=${name_count["$full_name"]}
 
   formatted_name=$(format_name "$first_name,$surname")
-  email=$(generate_email "$first_name" "$surname" "$location")
+  email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
 done < "$input_file"
