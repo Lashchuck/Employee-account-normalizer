@@ -40,6 +40,7 @@ awk -v OFS=',' '
     gsub(/\r/, "");                            # Usuń znaki powrotu karetki
     for (i = 1; i <= NF; i++) {
       gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
+      if (i == 4) gsub(/^"|"$/, "", $i)       # Usuń cudzysłowy tylko z 4 kolumny (title)
     }
     print
   }
