@@ -21,7 +21,7 @@ generate_email() {
   local count="$4"
 
   local formatted_email="${first_name:0:1}${surname,,}"
-  if [ "$count" -gt 3 ]; then
+  if [ "$count" -gt 0 ]; then
     echo "${formatted_email,,}${location_id}@abc.com"
   else
     echo "${formatted_email,,}@abc.com"
