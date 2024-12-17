@@ -8,26 +8,53 @@ fi
 input_file="$1"
 output_file="accounts_new.csv"
 
-# Sprawdzenie, czy plik wejściowy istnieje
 if [ ! -f "$input_file" ]; then
     echo "File not found!"
     exit 1
 fi
 
-# Usuń istniejący plik wyjściowy, aby zapobiec powtórzeniom
+# Function to format name
+format_name() {
+  local name="$1"
+  local first_name="${name%%,*}"
+  local surname="${name##*,}"
+
+  # Format the first letter of the first name to uppercase and the rest to lowercase
+  formatted_name=$(echo "${first_name:0:1}" | awk '{print toupper($0)}')$(echo "${first_name:1}" | awk '{print tolower($0)}')
+
+  # Format the surname to lowercase
+  formatted_name+=" $(echo "$surname" | awk '{print tolower($0)}')"
+
+  echo "$formatted_name"
+}
+
+# Function to generate email
+generate_email() {
+  local name="$1"
+  local surname="$2"
+  local location_id="$3"
+
+  # Combine first letter of first name, lowercase surname, and location id
+  echo "${name:0:1}${surname,,}${location_id}@abc.com"
+}
+
+# Create or clear the output file
 > "$output_file"
 
-# Przetworzenie pliku CSV
-while IFS=, read -r id location name role email
+while IFS=, read -r id location name title email department
 do
-    # Formatowanie nazwiska
-    formatted_name=$(echo "$name" | awk -F' ' '{ for(i=1;i<NF;i++) printf "%s ", toupper(substr($i,1,1)) tolower(substr($i,2)); printf "%s", toupper(substr($NF,1,1)) tolower(substr($NF,2)) }')
+  if [[ "$id" == "id" ]]; then
+    continue
+  fi
 
-    # Generowanie identyfikatora e-mail
-    formatted_email="${formatted_name// /.}@abc.com"
+  # Extract first name and surname
+  first_name="${name%%,*}"
+  surname="${name##*,}"
 
-    # Zapisanie do pliku wyjściowego z odpowiednim separatorem
-    echo "$id,$location,$formatted_name,$role,$formatted_email" >> "$output_file"
+  formatted_name=$(format_name "$first_name,$surname")
+  email=$(generate_email "$first_name" "$surname" "$location")
+
+  echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
 done < "$input_file"
 
 echo "File '$output_file' created successfully."
