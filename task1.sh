@@ -14,16 +14,16 @@ format_name_email() {
 
     formatted_name=$(echo "$name" | awk '{ for (i=1; i<=NF; i++) printf "%s%s", toupper(substr($i, 1, 1)), tolower(substr($i, 2)) }')
 
-    formatted_email=$(echo "$formatted_name" | awk '{ print tolower(substr($1, 1)) tolower($2) location_id "@abc.com" }')
+    formatted_email=$(echo "$formatted_name" | awk -v loc_id="$location_id" '{ print tolower(substr($1, 1)) tolower($2) loc_id "@abc.com" }')
 
-    echo "$formatted_name,$location_id,$formatted_email"
+    echo "$formatted_name,$formatted_email"
 }
 
 while IFS=, read -r id location_id name department email; do
 
     formatted_data=$(format_name_email "$name" "$location_id")
 
-    echo "$id,$formatted_data" >> "$output_file"
+    echo "$id,$location_id,$formatted_data" >> "$output_file"
 done < "$input_file"
 
 echo "Updated accounts saved to $output_file"
