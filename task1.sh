@@ -61,7 +61,7 @@ while IFS=, read -r id location name title email department; do
   surname="${name##* }"
 
   formatted_name=$(format_name "$first_name" "$surname")
-  count=${name_count["$formatted_name"]}
+  count=${name_count["${first_name:0:1}${surname,,}"]}
 
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
