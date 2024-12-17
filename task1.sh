@@ -31,7 +31,6 @@ generate_email() {
 > "$output_file"
 
 declare -A name_count
-declare -A email_map
 
 temp_file=$(mktemp)
 awk -F, '{
@@ -62,16 +61,15 @@ while IFS=, read -r id location name title email department; do
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
-  email_base="${first_name:0:1}${surname,,}"
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
     # Check if the email is a duplicate
-    if [ "${email_map[$final_email]}" ]; then
+    if [ "$final_email" -gt 1 ]; then
       # Add location_id to email if it's a duplicate
-      final_email="${final_email,,}${location}@abc.com"
+      finale_email="${final_email,,}${location}@abc.com"
     fi
 
-    echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
+    echo "$id,$location,$formatted_name,$title,$finale_email_email,$department" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
