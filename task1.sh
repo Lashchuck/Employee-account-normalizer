@@ -31,6 +31,7 @@ generate_email() {
 > "$output_file"
 
 declare -A name_count
+declare -A email_map
 
 temp_file=$(mktemp)
 awk -F, '{
