@@ -61,7 +61,7 @@ while IFS=, read -r id location name title email department; do
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
-    final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
+    final_email=$(generate_email "$first_name" "$surname")
 
     # Check if the email is a duplicate
     if [ "$count" -gt 1 ]; then
