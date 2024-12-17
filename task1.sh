@@ -15,13 +15,11 @@ fi
 
 touch "$output_file"
 
-# Przetwarzanie pliku
 while IFS=, read -r id location name role email
 do
-
     formatted_name=$(echo "$name" | awk '{print toupper(substr($0, 1, 1)) tolower(substr($0, 2))}')
 
-    formatted_email=$(echo "$formatted_name" | tr ' ' | awk '{print tolower($1)}')@abc.com
+    formatted_email="${formatted_name,,}@abc.com"
 
     echo "$id,$location,$formatted_name,$role,$formatted_email," >> "$output_file"
 done < "$input_file"
