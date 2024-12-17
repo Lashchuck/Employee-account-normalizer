@@ -1,60 +1,72 @@
 #!/bin/bash
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 path_to_accounts_csv"
-    exit 1
+if [ -z "$1" ]; then
+  echo "Usage: $0 path/to/accounts.csv"
+  exit 1
 fi
 
 input_file="$1"
 output_file="accounts_new.csv"
 
-if [ ! -f "$input_file" ]; then
-    echo "File not found!"
-    exit 1
-fi
-
-# Function to format name
 format_name() {
-  local name="$1"
-  local first_name="${name%%,*}"
-  local surname="${name##*,}"
-
-  # Format the first letter of the first name to uppercase and the rest to lowercase
-  formatted_name=$(echo "${first_name:0:1}" | awk '{print toupper($0)}')$(echo "${first_name:1}" | awk '{print tolower($0)}')
-
-  # Format the surname to lowercase
-  formatted_name+=" $(echo "$surname" | awk '{print tolower($0)}')"
-
-  echo "$formatted_name"
+  local first_name="$1"
+  local surname="$2"
+  echo "${first_name^} ${surname^}"
 }
 
-# Function to generate email
 generate_email() {
-  local name="$1"
+  local first_name="$1"
   local surname="$2"
   local location_id="$3"
+  local count="$4"
 
-  # Combine first letter of first name, lowercase surname, and location id
-  echo "${name:0:1}${surname,,}${location_id}@abc.com"
+  local formatted_email="${first_name:0:1}${surname,,}"
+  if [ "$count" -gt 1 ]; then
+    echo "${formatted_email,,}${location_id}@abc.com"
+  else
+    echo "${formatted_email,,}@abc.com"
+  fi
 }
 
-# Create or clear the output file
 > "$output_file"
 
-while IFS=, read -r id location name title email department
-do
+declare -A name_count
+
+temp_file=$(mktemp)
+awk -F, '{
+  gsub(/^"|"$/, "", $0);
+  gsub(/,+$/, "", $0);
+  print
+}' "$input_file" > "$temp_file"
+
+while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     continue
   fi
 
-  # Extract first name and surname
-  first_name="${name%%,*}"
-  surname="${name##*,}"
+  full_name="${name,,}"
+  name_count["$full_name"]=$((name_count["$full_name"] + 1))
+done < "$temp_file"
 
-  formatted_name=$(format_name "$first_name,$surname")
-  email=$(generate_email "$first_name" "$surname" "$location")
+while IFS=, read -r id location name title email department; do
+  if [[ "$id" == "id" ]]; then
+    echo "$id,$location,$name,$title,$email,$department" >> "$output_file"
+    continue
+  fi
+
+  title=$(echo "$title" | sed 's/"//g')
+  first_name="${name%% *}"
+  surname="${name##* }"
+
+  formatted_name=$(format_name "$first_name" "$surname")
+  full_name="${name,,}"
+  count=${name_count["$full_name"]}
+
+  email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
-done < "$input_file"
+done < "$temp_file"
 
-echo "File '$output_file' created successfully."
+rm -f "$temp_file"
+
+echo "The script has finished processing. The accounts_new.csv file has been created."
