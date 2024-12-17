@@ -50,7 +50,7 @@ do
   first_name="${name%% *}"
   surname="${name##* }"
 
-  formatted_name=$(format_name "$first_name $surname")
+  formatted_name=$(format_name "$first_name,$surname")
   count=${name_count["$full_name"]}
 
 
