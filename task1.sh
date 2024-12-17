@@ -67,7 +67,7 @@ while IFS=, read -r id location name title email department; do
 
   # Correctly preserve the full 'title' and 'department' values
   printf "%s,%s,%s,\"%s\",\"%s\",%s\n" \
-    "$id" "$location" "$formatted_name" "$title" "$department" "$final_email" >> "$output_file"
+    "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
