@@ -34,3 +34,5 @@ do
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
 done < "$input_file"
+
+echo "The script has finished processing. The accounts_new.csv file has been created."
