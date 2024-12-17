@@ -39,15 +39,6 @@ awk -F, '{
   print
 }' "$input_file" > "$temp_file"
 
-# Obliczanie liczby wystąpień dla każdego pełnego imienia
-while IFS=, read -r id location name title email department; do
-  if [[ "$id" == "id" ]]; then
-    continue
-  fi
-
-  full_name="${name,,}"
-  name_count["$full_name"]=$((name_count["$full_name"] + 1))
-done < "$temp_file"
 
 # Przetwarzanie i generowanie wyników
 while IFS=, read -r id location name title email department; do
