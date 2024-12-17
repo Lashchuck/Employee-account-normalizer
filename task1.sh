@@ -11,9 +11,6 @@ output_file="accounts_new.csv"
 format_name() {
   local first_name="$1"
   local surname="$2"
-  echo -n "$(echo "$part1" | sed 's/[^a-zA-Z0-9 ]/ /g')"
-  echo -n ", "
-  echo -n "$(echo "$part2" | sed 's/[^a-zA-Z0-9 ]/ /g')"
 }
 
 generate_email() {
@@ -33,13 +30,6 @@ generate_email() {
 > "$output_file"
 
 declare -A name_count
-
-temp_file=$(mktemp)
-awk -F, '{
-  gsub(/^"|"$/, "", $0);
-  gsub(/,+$/, "", $0);
-  print
-}' "$input_file" > "$temp_file"
 
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
@@ -66,11 +56,9 @@ while IFS=, read -r id location name title email department; do
   count=${name_count["${first_name:0:1}${surname,,}"]}
 
   final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
-  formatted_title=$(format_name "$title" "$department")
 
-  echo "$id,$location,$formatted_name,$formatted_title,$final_email,$department" >> "$output_file"
+  echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
 done < "$temp_file"
 
-rm -f "$temp_file"
 
 echo "The script has finished processing. The accounts_new.csv file has been created."
