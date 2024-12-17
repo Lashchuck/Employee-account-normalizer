@@ -15,6 +15,7 @@ fi
 
 touch "$output_file"
 
+# Przetwarzanie pliku
 while IFS=, read -r id location name role email
 do
 
