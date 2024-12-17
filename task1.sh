@@ -13,8 +13,9 @@ if [ ! -f "$input_file" ]; then
     exit 1
 fi
 
-echo "id,location,name,role,email" > "$output_file"
+> "$output_file"
 
+# Przetworzenie pliku CSV
 while IFS=, read -r id location name role email
 do
     formatted_name=$(echo "$name" | awk '{print toupper(substr($0, 1, 1)) tolower(substr($0, 2))}')
