@@ -34,6 +34,7 @@ declare -A name_count
 
 temp_file=$(mktemp)
 awk -F, '{
+  gsub(/^"|"$/, "", $0);
   print
 }' "$input_file" > "$temp_file"
 
@@ -63,7 +64,8 @@ while IFS=, read -r id location name title email department; do
 
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-    echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
+    printf "%s,%s,%s,\"%s\",\"%s\",%s\n" \
+        "$id" "$location" "$formatted_name" "$title" "$department" "$final_email" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
