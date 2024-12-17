@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-  echo "Usage: $0 patch/to/accounts.csv"
+  echo "Usage: $0 path/to/accounts.csv"
   exit 1
 fi
 
@@ -20,25 +20,32 @@ generate_email(){
 
   local formatted_name="${name:0:1}${surname,,}"
 
-    if [ "$count" -gt 1 ]; then
-        echo "${formatted_name,,}${location_id}@abc.com"
-      else
-        echo "${formatted_name,,}@abc.com"
-      fi
+  if [ "$count" -gt 1 ]; then
+    echo "${formatted_name,,}${location_id}@abc.com"
+  else
+    echo "${formatted_name,,}@abc.com"
+  fi
 }
 
-# Create or clear the output file
 > "$output_file"
 
 declare -A name_count
+
+temp_file=$(mktemp)
+awk '{
+  gsub(/"Director|Manager/, "&");
+  gsub(/^"|"$/, "");
+  print
+}' "$input_file" > "$temp_file"
+
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     continue
   fi
 
-  full_name="${name,,}" # Klucz do sprawdzenia liczby wystąpień
+  full_name="${name,,}"
   name_count["$full_name"]=$((name_count["$full_name"] + 1))
-done < "$input_file"
+done < "$temp_file"
 
 while IFS=, read -r id location name title email department
 do
@@ -46,7 +53,6 @@ do
     continue
   fi
 
-  # Extract first name and surname
   first_name="${name%% *}"
   surname="${name##* }"
 
@@ -54,10 +60,11 @@ do
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
-
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
-done < "$input_file"
+done < "$temp_file"
+
+rm -f "$temp_file"
 
 echo "The script has finished processing. The accounts_new.csv file has been created."
