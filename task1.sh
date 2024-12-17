@@ -20,7 +20,7 @@ format_name() {
   local surname="${name##*,}"
 
   # Format the first letter of the first name to uppercase and the rest to lowercase
-  formatted_first_name=$(echo "${first_name:0:1}" | awk '{print tolower($0)}')$(echo "${first_name:1}" | awk '{print tolower($0)}')
+  formatted_first_name=$(echo "${first_name:0:1}" | awk '{print toupper($0)}')$(echo "${first_name:1}" | awk '{print tolower($0)}')
 
   # Format the surname to lowercase
   formatted_surname=$(echo "$surname" | awk '{print tolower($0)}')
@@ -33,8 +33,11 @@ generate_email() {
   local formatted_name="$1"
   local location_id="$2"
 
+  # Extract first name from formatted name
+  local first_name_initial=$(echo "$formatted_name" | awk '{print tolower(substr($1, 1, 1))}')
+
   # Use formatted first name initial and lowercase surname for the email
-  echo "$(echo "${formatted_name,,}")${location_id}@abc.com"
+  echo "${first_name_initial}${formatted_name,,}${location_id}@abc.com"
 }
 
 # Create or clear the output file
