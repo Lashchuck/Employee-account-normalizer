@@ -9,14 +9,26 @@ input_file="$1"
 output_file="accounts_new.csv"
 
 format_name() {
-  echo "$1" | awk -F, '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2));}1'
+  local name="$1"
+  local first_name="${name%%,*}"
+  local surname="${name##*,}"
+
+  # Format the first letter of the first name to uppercase and the rest to lowercase
+  formatted_first_name=$(echo "${first_name:0:1}" | awk '{print tolower($0)}')$(echo "${first_name:1}" | awk '{print tolower($0)}')
+
+  # Format the surname to lowercase
+  formatted_surname=$(echo "$surname" | awk '{print tolower($0)}')
+
+  echo "$formatted_first_name $formatted_surname"
 }
 
-generate_email(){
-  local name="$1"
-  local surname="$2"
-  local location_id="$3"
-  echo "${name:0:1}${surname,,}${location_id}@abc.com"
+# Function to generate email
+generate_email() {
+  local formatted_name="$1"
+  local location_id="$2"
+
+  # Use formatted first name initial and lowercase surname for the email
+  echo "$(echo "${formatted_name,,}")${location_id}@abc.com"
 }
 
 # Create or clear the output file
