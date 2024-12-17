@@ -1,34 +1,46 @@
 #!/bin/bash
 
-if [ "$#" -ne 1 ]; then
-    echo "Usage: $0 accounts.csv"
+if [ -z "$1" ]; then
+    echo "Usage: $0 path/to/accounts.csv"
     exit 1
 fi
 
-input_file=$1
+# Ścieżka do pliku wejściowego
+input_file="$1"
+# Ścieżka do pliku wyjściowego
 output_file="accounts_new.csv"
 
-# Function to format name and generate a unique email
-generate_email() {
-    local name="$1"
-    local location_id="$2"
-
-    # Format name
-    formatted_name=$(echo "$name" | awk '{ for (i=1; i<=NF; i++) printf "%s%s", toupper(substr($i, 1, 1)), tolower(substr($i, 2)) }')
-
-    # Generate unique email with location_id appended as suffix
-    formatted_email=$(echo "$formatted_name" | awk -v loc_id="$location_id" '{ print tolower(substr($1, 1)) tolower($2) loc_id "@abc.com" }')
-
-    echo "$formatted_name,$formatted_email"
+# Funkcja do formatowania imienia i nazwiska
+format_name() {
+    echo "$1" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2));}1'
 }
 
-# Read the input file line by line
-while IFS=, read -r id location_id name department email; do
-    # Format the name and generate a unique email
-    formatted_data=$(generate_email "$name" "$location_id")
+# Funkcja do generowania adresu e-mail
+generate_email() {
+    local name="$1"
+    local surname="$2"
+    # Tworzenie adresu e-mail w formacie: pierwsza litera imienia + pełne nazwisko, małymi literami
+    echo "${name:0:1}${surname,,}@abc.com"
+}
 
-    # Write the formatted data to the output file
-    echo "$id,$location_id,$formatted_data" >> "$output_file"
+# Przetwarzanie pliku wejściowego
+while IFS=, read -r id location name position
+do
+    # Pomijanie wiersza nagłówka
+    if [[ "$id" == "id" ]]; then
+        continue
+    fi
+
+    # Podział imienia i nazwiska
+    first_name="${name%% *}"
+    surname="${name##* }"
+
+    # Formatuj imię i nazwisko oraz generuj adres e-mail
+    formatted_name=$(format_name "$first_name $surname")
+    email=$(generate_email "$first_name" "$surname")
+
+    # Zapisz do pliku wyjściowego
+    echo "$id,$location,$formatted_name,$position,$email" >> "$output_file"
 done < "$input_file"
 
-echo "Updated accounts saved to $output_file"
+echo "Nowy plik z kontami został utworzony: $output_file"
