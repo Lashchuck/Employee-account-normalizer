@@ -32,6 +32,7 @@ generate_email() {
 > "$output_file"
 
 declare -A name_count
+declare -A email_count
 
 temp_file=$(mktemp)
 awk -F, '{
@@ -47,6 +48,7 @@ while IFS=, read -r id location name title email department; do
 
   full_name="${name,,}"
   name_count["$full_name"]=$((name_count["$full_name"] + 1))
+  email_count["$email"]=$((email_count["$email"] + 1))
 done < "$temp_file"
 
 while IFS=, read -r id location name title email department; do
@@ -60,15 +62,17 @@ while IFS=, read -r id location name title email department; do
 
   formatted_name=$(format_name "$first_name" "$surname")
   full_name="${name,,}"
-  count=${name_count["$full_name"]}
+  count=${email_count["$email"]}
 
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
     # Check if the email is a duplicate
-    if [ "$count" -gt 2 ]; then
-      # Add location_id to email if it's a duplicate
-      echo "${final_email,,}${location_id}@abc.com"
-    fi
+    if [ "$count" -gt 1 ]; then
+        # Add location_id to email if it's a duplicate
+        final_email="${final_email,,}${location}@abc.com"
+      else
+        final_email="${final_email,,}@abc.com"
+      fi
 
     echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
 done < "$temp_file"
