@@ -19,7 +19,6 @@ generate_email(){
   echo "${name:0:1}${surname,,}${location_id}@abc.com"
 }
 
-# Create or clear the output file
 > "$output_file"
 
 while IFS=, read -r id location name title email department
@@ -28,7 +27,6 @@ do
     continue
   fi
 
-  # Extract first name and surname
   first_name="${name%% *}"
   surname="${name##* }"
 
