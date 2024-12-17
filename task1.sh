@@ -67,7 +67,7 @@ while IFS=, read -r id location name title email department; do
       echo "${final_email,,}@abc.com"
     fi
 
-  email=$(generate_email "$first_name" "$surname" "$location" "$count")
+  email=$(final_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
 done < "$temp_file"
