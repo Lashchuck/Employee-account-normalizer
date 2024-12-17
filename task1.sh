@@ -20,11 +20,11 @@ fi
 # Przetworzenie pliku CSV
 while IFS=, read -r id location name role email
 do
-    # Formatowanie nazwy (pierwsza litera wielka, reszta małe litery)
-    formatted_name=$(echo "$name" | awk '{print toupper(substr($0, 1, 1)) tolower(substr($0, 2))}')
+    # Formatowanie nazwiska
+    formatted_name=$(echo "$name" | awk -F' ' '{ for(i=1;i<NF;i++) printf "%s ", toupper(substr($i,1,1)) tolower(substr($i,2)); printf "%s", toupper(substr($NF,1,1)) tolower(substr($NF,2)) }')
 
-    # Formatowanie emaila
-    formatted_email="${formatted_name,,}@abc.com"
+    # Generowanie identyfikatora e-mail
+    formatted_email="${formatted_name// /.}@abc.com"
 
     # Zapisanie do pliku wyjściowego z odpowiednim separatorem
     echo "$id,$location,$formatted_name,$role,$formatted_email" >> "$output_file"
