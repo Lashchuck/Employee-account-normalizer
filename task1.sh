@@ -17,7 +17,7 @@ fi
 
 while IFS=, read -r id location name role email
 do
-    formatted_name=$(echo "$name" | awk '{print toupper(substr($0, 1, 1)) tolower(substr($0, 2))}')
+    formatted_name=$(echo "$name" | awk '{print toupper(substr($0, 1, 1)) toupper(substr($0, 2))}')
 
     formatted_email="${formatted_name,,}@abc.com"
 
