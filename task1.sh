@@ -31,6 +31,8 @@ generate_email() {
 
 declare -A name_count
 
+temp_file=$(mktemp)
+
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     continue
@@ -41,7 +43,7 @@ while IFS=, read -r id location name title email department; do
     formatted_name="${first_name:0:1}${surname,,}"
 
     name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
-done
+done < "$temp_file"
 
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
@@ -58,7 +60,8 @@ while IFS=, read -r id location name title email department; do
   final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
-done
+done < "$temp_file"
 
+rm -f "$temp_file"
 
 echo "The script has finished processing. The accounts_new.csv file has been created."
