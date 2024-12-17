@@ -21,9 +21,7 @@ do
 
     first_name_initial=$(echo "$name" | awk '{print tolower(substr($1, 1, 1))}')
     last_name=$(echo "$name" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; printf "%s", $NF}')
-
-        formatted_name=$(echo "$first_name_initial" | awk '{print toupper(substr($0, 1, 1)) tolower(substr($0, 2))}')$(echo "$last_name" | awk '{print tolower($0)}')
-        formatted_email="${formatted_name,,}@abc.com"
+    formatted_email="${formatted_name,,}@abc.com"
 
     echo "$id,$location,$formatted_name,$role,$formatted_email" >> "$output_file"
 done < "$input_file"
