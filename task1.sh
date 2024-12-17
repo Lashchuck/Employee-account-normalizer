@@ -62,7 +62,7 @@ while IFS=, read -r id location name title email department; do
   fi
 
   # Wyodrębnianie imienia i nazwiska
-  name=$(echo "$name" | sed 's/"//g') # Usuwanie cudzysłowów wokół imienia
+  title=$(echo "title" | sed 's/"//g') # Usuwanie cudzysłowów wokół imienia
   first_name="${name%% *}"
   surname="${name##* }"
 
