@@ -32,8 +32,8 @@ generate_email(){
 declare -A name_count
 
 temp_file=$(mktemp)
-awk '{
-  gsub(/^"|"$/, "");
+awk -F, '{
+  gsub(/^"|"$/, "", $0);
   print
 }' "$input_file" > "$temp_file"
 
