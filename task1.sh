@@ -47,6 +47,7 @@ while IFS=, read -r id location name title email department; do
 
   full_name="${name,,}"
   name_count["$full_name"]=$((name_count["$full_name"] + 1))
+  email_map["$email"]="$full_name"
 done < "$temp_file"
 
 while IFS=, read -r id location name title email department; do
@@ -65,10 +66,10 @@ while IFS=, read -r id location name title email department; do
   email_base="${first_name:0:1}${surname,,}"
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-  if [ "${email:0:1}" == "${surname:0:1}" ] && [ "$full_name" == "${email:1}" ]; then
-      # Add location_id to email
-      email="${email,,}${location}@abc.com"
-    fi
+if [ "${email_map[$email]}" ]; then
+    # Add location_id to email if it's a duplicate
+    email="${email,,}${location}@abc.com"
+  fi
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
 done < "$temp_file"
