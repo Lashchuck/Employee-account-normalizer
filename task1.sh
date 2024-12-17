@@ -41,7 +41,7 @@ while IFS=, read -r id location name title email department; do
     formatted_name="${first_name:0:1}${surname,,}"
 
     name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
-done < "$temp_file"
+done
 
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
@@ -58,7 +58,7 @@ while IFS=, read -r id location name title email department; do
   final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
-done < "$temp_file"
+done
 
 
 echo "The script has finished processing. The accounts_new.csv file has been created."
