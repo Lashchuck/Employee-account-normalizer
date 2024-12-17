@@ -33,6 +33,8 @@ generate_email() {
 declare -A name_count
 
 temp_file=$(mktemp)
+
+# Properly handle quoted fields and remove extraneous quotes
 awk 'BEGIN { FS=OFS="," }
 {
   gsub(/\r/, "")                          # Remove carriage returns
@@ -72,9 +74,9 @@ while IFS=, read -r id location name title email department; do
 
   final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-  # Correctly preserve the full 'title' and 'department' values
+  # Handle empty fields and ensure the format is correct
   printf "%s,%s,%s,\"%s\",%s,%s\n" \
-      "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
+    "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
