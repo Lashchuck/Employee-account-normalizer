@@ -17,10 +17,12 @@ fi
 
 while IFS=, read -r id location name role email
 do
-    formatted_name=$(echo "$name" | awk -F' ' '{ for(i=1;i<NF;i++) printf "%s ", toupper(substr($i,1,1)) tolower(substr($i,2)); printf "%s", toupper(substr($NF,1,1)) tolower(substr($NF,2)) }')
+    formatted_name=$(echo "$name" | awk '{for(i=1;i<NF;i++) printf "%s ", toupper(substr($i,1,1)) tolower(substr($i,2)); printf "%s", toupper(substr($NF,1,1)) tolower(substr($NF,2))}')
 
-    first_name_initial=$(echo "$name" | awk '{print tolower(substr($1, 1, 1))}')
-    formatted_email="${first_name_initial}@abc.com"
+        # Generowanie identyfikatora e-mail
+        first_name_initial=$(echo "$name" | awk '{print tolower(substr($1, 1, 1))}')
+        last_name=$(echo "$name" | awk '{for(i=2;i<=NF;i++) printf "%s ", $i; printf "%s", $NF}')
+        formatted_email="${first_name_initial}${last_name,,}@abc.com"
 
     echo "$id,$location,$formatted_name,$role,$formatted_email" >> "$output_file"
 done < "$input_file"
