@@ -61,6 +61,12 @@ while IFS=, read -r id location name title email department; do
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
+    if [ "$formatted_email" -gt 1 ]; then
+      echo "${final_email,,}${location_id}@abc.com"
+    else
+      echo "${final_email,,}@abc.com"
+    fi
+
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
