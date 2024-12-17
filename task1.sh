@@ -13,19 +13,19 @@ format_name() {
 }
 
 generate_email() {
-  local name="$1"
+  local first_name="$1"
   local surname="$2"
   local location_id="$3"
   local count="$4"
 
   # Generuj bazowy email bez location_id
-  local formatted_name="${name:0:1}${surname,,}"
+  local formatted_email="${first_name:0:1}${surname,,}"
 
   # Dodaj location_id tylko jeśli dana osoba pojawia się więcej niż raz
   if [ "$count" -gt 1 ]; then
-    echo "${formatted_name,,}${location_id}@abc.com"
+    echo "${formatted_email,,}${location_id}@abc.com"
   else
-    echo "${formatted_name,,}@abc.com"
+    echo "${formatted_email,,}@abc.com"
   fi
 }
 
@@ -39,7 +39,12 @@ while IFS=, read -r id location name title email department; do
     continue
   fi
 
-  full_name="${name,,}" # Klucz do sprawdzenia liczby wystąpień
+  # Podział imienia i nazwiska
+  first_name="${name%% *}"        # Pierwsze słowo (imię)
+  surname="${name##* }"           # Ostatnie słowo (nazwisko)
+
+  # Klucz w postaci "imię nazwisko" (małymi literami)
+  full_name="${first_name,,} ${surname,,}"
   name_count["$full_name"]=$((name_count["$full_name"] + 1))
 done < "$input_file"
 
@@ -50,13 +55,16 @@ while IFS=, read -r id location name title email department; do
     continue
   fi
 
-  first_name="${name%% *}"
-  surname="${name##* }"
+  # Podział imienia i nazwiska
+  first_name="${name%% *}"        # Pierwsze słowo (imię)
+  surname="${name##* }"           # Ostatnie słowo (nazwisko)
 
-  formatted_name=$(format_name "$first_name" "$surname")
-  full_name="${name,,}"
+  # Klucz w postaci "imię nazwisko" (małymi literami)
+  full_name="${first_name,,} ${surname,,}"
   count=${name_count["$full_name"]}
 
+  # Generowanie e-maila
+  formatted_name="$(format_name "$first_name" "$surname")"
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
