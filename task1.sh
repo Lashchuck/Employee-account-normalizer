@@ -31,6 +31,7 @@ generate_email() {
 > "$output_file"
 
 declare -A name_count
+declare -A email_map
 
 temp_file=$(mktemp)
 awk -F, '{
@@ -61,17 +62,12 @@ while IFS=, read -r id location name title email department; do
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
-  email_base=$(generate_email "$first_name" "$surname" "" 1)
+  email_base="${first_name:0:1}${surname,,}"
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-  if [ "$count" -gt 1 ]; then
-      # Check if this email already has a location_id appended
-      if [[ "${email_map[$email_base]}" ]]; then
-        email="${email_base,,}${location}@abc.com"
-      fi
-      email_map["$email_base"]="$email"
-    else
-      email="$email_base"
+  if [ "${email:0:1}" == "${surname:0:1}" ] && [ "$full_name" == "${email:1}" ]; then
+      # Add location_id to email
+      email="${email,,}${location}@abc.com"
     fi
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
