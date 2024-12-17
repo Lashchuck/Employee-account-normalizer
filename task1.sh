@@ -61,11 +61,12 @@ while IFS=, read -r id location name title email department; do
   surname="${name##* }"
 
   formatted_name=$(format_name "$first_name" "$surname")
+  formatted_title=$(format_name "$title" "$department")
   count=${name_count["${first_name:0:1}${surname,,}"]}
 
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-    echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
+    echo "$id,$location,$formatted_name,$formatted_title,$final_email,$department" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
