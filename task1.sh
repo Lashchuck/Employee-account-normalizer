@@ -15,17 +15,12 @@ format_name() {
 generate_email(){
   local name="$1"
   local surname="$2"
-  echo "${name:0:1}${surname,,}@abc.com"
+  local location_id="$3"
+  echo "${name:0:1}${surname,,}${location_id}@abc.com"
 }
 
-# Ensure input file exists and is readable
-if [ ! -f "$input_file" ]; then
-  echo "Error: File '$input_file' does not exist or is not readable."
-  exit 1
-fi
-
-# Process each line of the file
-while IFS=, read -r id location name position
+# Skrypty zakładają, że pierwsza linia pliku accounts.csv to nagłówki
+while IFS=, read -r id location name title email department
 do
   if [[ "$id" == "id" ]]; then
     continue
@@ -35,7 +30,9 @@ do
   surname="${name##* }"
 
   formatted_name=$(format_name "$first_name $surname")
-  email=$(generate_email "$first_name" "$surname")
+  email=$(generate_email "$first_name" "$surname" "$location")
 
-  echo "$id,$location,$formatted_name,$position,$email" >> "$output_file"
+  echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
 done < "$input_file"
+
+echo "Skrypt zakończył przetwarzanie. Plik accounts_new.csv został utworzony."
