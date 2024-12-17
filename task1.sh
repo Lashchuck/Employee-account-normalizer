@@ -1,38 +1,33 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-  echo "Usage: $0 patch/to/accounts.csv"
+  echo "Usage: ./task1.sh accounts.csv"
   exit 1
 fi
 
 input_file="$1"
 output_file="accounts_new.csv"
 
-format_name() {
-  echo "$1" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2));}1'
+# Process each line in the input file
+awk -F, -v OFS=, '
+BEGIN {
+  print "ID,Location,Name,Role,Email"
 }
+{
+  # Capitalize first letter of name/surname and lowercase the rest
+  name = toupper(substr($3,1,1)) tolower(substr($3,2)) " " toupper(substr($4,1,1)) tolower(substr($4,2))
 
-generate_email(){
-  local name="$1"
-  local surname="$2"
-  local location_id="$3"
-  echo "${name:0:1}${surname,,}${location_id}@abc.com"
+  # Update email format
+  email = tolower(substr($3,1,1)) tolower(substr($4)) "@" "abc.com"
+
+  # Include location_id in the email
+  split($1, id_parts, "-")
+  location_id = id_parts[2]
+  email = email location_id
+
+  # Print the updated line to the new file
+  print $1, $2, name, $4, email
 }
+' "$input_file" > "$output_file"
 
-# Skrypty zakładają, że pierwsza linia pliku accounts.csv to nagłówki
-while IFS=, read -r id location name title email department
-do
-  if [[ "$id" == "id" ]]; then
-    continue
-  fi
-
-  first_name="${name%% *}"
-  surname="${name##* }"
-
-  formatted_name=$(format_name "$first_name $surname")
-  email=$(generate_email "$first_name" "$surname" "$location")
-
-  echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
-done < "$input_file"
-
-echo "Skrypt zakończył przetwarzanie. Plik accounts_new.csv został utworzony."
+echo "Updated file saved as $output_file"
