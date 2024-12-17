@@ -1,44 +1,44 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-  echo "Usage: $0 patch/to/accounts.csv"
-  exit 1
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 path_to_accounts_csv"
+    exit 1
 fi
 
 input_file="$1"
 output_file="accounts_new.csv"
 
+if [ ! -f "$input_file" ]; then
+    echo "File not found!"
+    exit 1
+fi
+
+# Function to format name
 format_name() {
-  echo "$1" | awk -F, '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) tolower(substr($i,2));}1'
+  local name="$1"
+  local first_name="${name%%,*}"
+  local surname="${name##*,}"
+
+  # Format the first letter of the first name to uppercase and the rest to lowercase
+  formatted_first_name=$(echo "${first_name:0:1}" | awk '{print tolower($0)}')$(echo "${first_name:1}" | awk '{print tolower($0)}')
+
+  # Format the surname to lowercase
+  formatted_surname=$(echo "$surname" | awk '{print tolower($0)}')
+
+  echo "$formatted_first_name $formatted_surname"
 }
 
-generate_email(){
-  local name="$1"
-  local surname="$2"
-  local location_id="$3"
-  local count="$4"
+# Function to generate email
+generate_email() {
+  local formatted_name="$1"
+  local location_id="$2"
 
-  local formatted_name="${name:0:1}${surname,,}"
-
-    if [ "$count" -gt 1 ]; then
-        echo "${formatted_name,,}${location_id}@abc.com"
-      else
-        echo "${formatted_name,,}@abc.com"
-      fi
+  # Use formatted first name initial and lowercase surname for the email
+  echo "$(echo "${formatted_name,,}")${location_id}@abc.com"
 }
 
 # Create or clear the output file
 > "$output_file"
-
-declare -A name_count
-while IFS=, read -r id location name title email department; do
-  if [[ "$id" == "id" ]]; then
-    continue
-  fi
-
-  full_name="${name,,}" # Klucz do sprawdzenia liczby wystąpień
-  name_count["$full_name"]=$((name_count["$full_name"] + 1))
-done < "$input_file"
 
 while IFS=, read -r id location name title email department
 do
@@ -47,17 +47,13 @@ do
   fi
 
   # Extract first name and surname
-  first_name="${name%% *}"
-  surname="${name##* }"
+  first_name="${name%%,*}"
+  surname="${name##*,}"
 
   formatted_name=$(format_name "$first_name,$surname")
-  full_name="${name,,}"
-  count=${name_count["$full_name"]}
-
-
-  email=$(generate_email "$first_name" "$surname" "$location" "$count")
+  email=$(generate_email "$formatted_name" "$location")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
 done < "$input_file"
 
-echo "The script has finished processing. The accounts_new.csv file has been created."
+echo "File '$output_file' created successfully."
