@@ -21,7 +21,6 @@ generate_email() {
   local count="$4"
 
   local formatted_email="${first_name:0:1}${surname,,}"
-  echo "Formatted Email: $formatted_email"
   if [ "$count" -gt 1 ]; then
     echo "${formatted_email,,}${location_id}@abc.com"
   else
@@ -58,14 +57,15 @@ while IFS=, read -r id location name title email department; do
   first_name="${name%% *}"
   surname="${name##* }"
 
-  formatted_name=$(format_name "$first_name" "$surname")
+  formatted_name="${first_name:0:1}${surname,,}"
+  count=${name_count["$formatted_name"]}
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
     # Check if the email is a duplicate
-    if [ "$count" -gt 2 ]; then
+    if [ "$count" -gt 1 ]; then
       # Add location_id to email if it's a duplicate
       echo "${final_email,,}${location_id}@abc.com"
     fi
