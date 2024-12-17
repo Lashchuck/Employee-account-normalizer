@@ -64,12 +64,12 @@ while IFS=, read -r id location name title email department; do
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
     # Check if the email is a duplicate
-    if [ "$final_email" -gt 1 ]; then
+    if [ "$count" -gt 1 ]; then
       # Add location_id to email if it's a duplicate
-      echo "${finale_email,,}${location_id}@abc.com"
+      echo "${final_email,,}${location_id}@abc.com"
     fi
 
-    echo "$id,$location,$formatted_name,$title,$finale_email,$department" >> "$output_file"
+    echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
