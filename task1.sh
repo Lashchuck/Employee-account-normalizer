@@ -39,6 +39,7 @@ awk -F, '{
   print
 }' "$input_file" > "$temp_file"
 
+# Obliczanie liczby wystąpień dla każdego pełnego imienia
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     continue
@@ -48,13 +49,16 @@ while IFS=, read -r id location name title email department; do
   name_count["$full_name"]=$((name_count["$full_name"] + 1))
 done < "$temp_file"
 
+# Przetwarzanie i generowanie wyników
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     echo "$id,$location,$name,$title,$email,$department" >> "$output_file"
     continue
   fi
 
+  # Usunięcie cudzysłowu z pola title
   title=$(echo "$title" | sed 's/"//g')
+
   first_name="${name%% *}"
   surname="${name##* }"
 
@@ -62,6 +66,7 @@ while IFS=, read -r id location name title email department; do
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
+  # Generowanie emaila z lokalizacją
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
