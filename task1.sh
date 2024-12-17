@@ -13,7 +13,7 @@ if [ ! -f "$input_file" ]; then
     exit 1
 fi
 
-touch "$output_file"
+echo "id,location,name,role,email" > "$output_file"
 
 while IFS=, read -r id location name role email
 do
@@ -21,7 +21,7 @@ do
 
     formatted_email="${formatted_name,,}@abc.com"
 
-    echo "$id,$location,$formatted_name,$role,$formatted_email," >> "$output_file"
+    echo "$id,$location,$formatted_name,$role,$formatted_email" >> "$output_file"
 done < "$input_file"
 
 echo "File '$output_file' created successfully."
