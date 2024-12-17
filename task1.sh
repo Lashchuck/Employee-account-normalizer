@@ -1,7 +1,8 @@
 #!/bin/bash
 
+
 if [ -z "$1" ]; then
-  echo "Usage: $0 path/to/accounts.csv"
+  printf "Usage: %s path/to/accounts.csv\n" "$0" >&2
   exit 1
 fi
 
@@ -11,7 +12,7 @@ output_file="accounts_new.csv"
 format_name() {
   local first_name="$1"
   local surname="$2"
-  echo "$(echo ${first_name^}) $(echo ${surname^})"
+  printf "%s %s" "${first_name^}" "${surname^}"
 }
 
 generate_email() {
@@ -21,10 +22,10 @@ generate_email() {
   local count="$4"
 
   local formatted_email="${first_name:0:1}${surname,,}"
-  if [ "$count" -gt 1 ]; then
-    echo "${formatted_email,,}${location_id}@abc.com"
+  if [[ "$count" -gt 1 ]]; then
+    printf "%s%s@abc.com" "${formatted_email,,}" "${location_id}"
   else
-    echo "${formatted_email,,}@abc.com"
+    printf "%s@abc.com" "${formatted_email,,}"
   fi
 }
 
@@ -38,21 +39,21 @@ awk -F, '{
   print
 }' "$input_file" > "$temp_file"
 
+# First pass to count name occurrences
 while IFS=, read -r id location name title email department; do
-  if [[ "$id" == "id" ]]; then
-    continue
-  fi
+  [[ "$id" == "id" ]] && continue
 
   first_name="${name%% *}"
-    surname="${name##* }"
-    formatted_name="${first_name:0:1}${surname,,}"
+  surname="${name##* }"
+  formatted_name="${first_name:0:1}${surname,,}"
 
-    name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
+  name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
 done < "$temp_file"
 
+# Second pass to process the file
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
-    echo "$id,$location,$name,$title,$email,$department" >> "$output_file"
+    printf "%s,%s,%s,%s,%s,%s\n" "$id" "$location" "$name" "$title" "$email" "$department" >> "$output_file"
     continue
   fi
 
@@ -62,12 +63,13 @@ while IFS=, read -r id location name title email department; do
   formatted_name=$(format_name "$first_name" "$surname")
   count=${name_count["${first_name:0:1}${surname,,}"]}
 
-    final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
+  final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-    printf "%s,%s,%s,\"%s\",\"%s\",%s\n" \
-        "$id" "$location" "$formatted_name" "$title" "$department" "$final_email" >> "$output_file"
+  # Correctly preserve the full 'title' and 'department' values
+  printf "%s,%s,%s,\"%s\",\"%s\",%s\n" \
+    "$id" "$location" "$formatted_name" "$title" "$department" "$final_email" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
 
-echo "The script has finished processing. The accounts_new.csv file has been created."
+printf "The script has finished processing. The accounts_new.csv file has been created.\n"
