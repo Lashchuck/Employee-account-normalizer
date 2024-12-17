@@ -32,23 +32,22 @@ generate_email() {
 
 declare -A name_count
 
-# Temp file to clean and parse CSV properly
 temp_file=$(mktemp)
 
-# Convert CSV to correctly handle fields with quotes and commas
+# Poprawne przetwarzanie CSV z uwzględnieniem cudzysłowów i przecinków
 awk -v OFS=',' '
-  BEGIN { FPAT = "([^,]+)|(\"[^\"]+\")" }  # Split fields correctly with quotes
-  NR==1 { print; next }                  # Print header as is
+  BEGIN { FPAT = "([^,]+)|(\"[^\"]+\")" }
+  NR == 1 { print; next }                  # Przepisanie nagłówka
   {
-    gsub(/\r/, "")                      # Remove carriage returns
+    gsub(/\r/, "")                         # Usunięcie znaków powrotu karetki
     for (i = 1; i <= NF; i++) {
-      gsub(/^"|"$/, "", $i)             # Remove surrounding quotes
+      gsub(/^"|"$/, "", $i)                # Usunięcie cudzysłowów otaczających
     }
     print
   }
 ' "$input_file" > "$temp_file"
 
-# First pass: Count name occurrences
+# Pierwsze przejście: zliczanie wystąpień nazw
 while IFS=, read -r id location name title email department; do
   [[ "$id" == "id" ]] && continue
 
@@ -59,7 +58,7 @@ while IFS=, read -r id location name title email department; do
   name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
 done < "$temp_file"
 
-# Second pass: Process and generate the output CSV
+# Drugie przejście: generowanie wyniku
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     printf "%s,%s,%s,%s,%s,%s\n" "$id" "$location" "$name" "$title" "$email" "$department" >> "$output_file"
@@ -74,11 +73,11 @@ while IFS=, read -r id location name title email department; do
 
   final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-  # Handle complex 'title' and 'department' fields with proper quotes
+  # Właściwy format dla title i pozostałych pól
   printf "%s,%s,%s,\"%s\",%s,%s\n" \
     "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
 
-printf "The script has finished processing. The %s file has been created.\n" "$output_file"
+printf "The script has finished processing. The file '%s' has been created.\n" "$output_file"
