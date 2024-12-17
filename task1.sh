@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 if [ -z "$1" ]; then
   printf "Usage: %s path/to/accounts.csv\n" "$0" >&2
   exit 1
@@ -66,8 +65,8 @@ while IFS=, read -r id location name title email department; do
   final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   # Correctly preserve the full 'title' and 'department' values
-  printf "%s,%s,%s,\"%s\",\"%s\",%s\n" \
-    "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
+  printf "%s,%s,%s,%s, %s,%s\n" \
+      "$id" "$location" "$formatted_name" "$title, $department" "$final_email" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
