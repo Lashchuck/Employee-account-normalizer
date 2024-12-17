@@ -17,6 +17,7 @@ generate_email(){
   local surname="$2"
   local location_id="$3"
   local count="$4"
+
   local formatted_name="${name:0:1}${surname,,}"
 
     if [ "$count" -gt 1 ]; then
@@ -48,9 +49,11 @@ do
   # Extract first name and surname
   first_name="${name%% *}"
   surname="${name##* }"
+
+  formatted_name=$(format_name "$first_name $surname")
   count=${name_count["$full_name"]}
 
-  formatted_name=$(format_name "$first_name,$surname")
+
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
