@@ -5,7 +5,7 @@ if [ -z "$1" ]; then
   exit 1
 fi
 
-inout_file="$1"
+input_file="$1"
 output_file="accounts_new_csv"
 
 format_name() {
