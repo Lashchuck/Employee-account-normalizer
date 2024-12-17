@@ -65,7 +65,11 @@ while IFS=, read -r id location name title email department; do
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   if [ "$count" -gt 1 ]; then
-      email="${email_base%,*}${location}@abc.com"
+      # Check if this email already has a location_id appended
+      if [[ "${email_map[$email_base]}" ]]; then
+        email="${email_base,,}${location}@abc.com"
+      fi
+      email_map["$email_base"]="$email"
     else
       email="$email_base"
     fi
