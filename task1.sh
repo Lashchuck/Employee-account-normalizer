@@ -44,7 +44,11 @@ while IFS=, read -r id location name title email department; do
     continue
   fi
 
-  name_count["${first_name:0:1}${surname,,}"]=$((name_count["${first_name:0:1}${surname,,}"] + 1))
+  first_name="${name%% *}"
+    surname="${name##* }"
+    formatted_name="${first_name:0:1}${surname,,}"
+
+    name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
 done < "$temp_file"
 
 while IFS=, read -r id location name title email department; do
