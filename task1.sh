@@ -19,7 +19,6 @@ generate_email(){
   echo "${name:0:1}${surname,,}${location_id}@abc.com"
 }
 
-# Skrypty zakładają, że pierwsza linia pliku accounts.csv to nagłówki
 while IFS=, read -r id location name title email department
 do
   if [[ "$id" == "id" ]]; then
