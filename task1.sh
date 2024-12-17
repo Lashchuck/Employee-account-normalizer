@@ -11,7 +11,7 @@ output_file="accounts_new.csv"
 format_name() {
   local first_name="$1"
   local surname="$2"
-  echo "${first_name^} ${surname^}"
+  echo "$(echo ${first_name^}) $(echo ${surname^})"
 }
 
 generate_email() {
@@ -60,13 +60,12 @@ while IFS=, read -r id location name title email department; do
   first_name="${name%% *}"
   surname="${name##* }"
 
-  formatted_name="${first_name:0:1}${surname,,}"
+  formatted_name=$(format_name "$first_name" "$surname")
   count=${name_count["$formatted_name"]}
 
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
-    formatted_title=$(format_name "$title" "$department")
 
-    echo "$id,$location,$formatted_name,$formatted_title,$final_email,$department" >> "$output_file"
+    echo "$id,$location,$formatted_name,$title,$final_email,$department" >> "$output_file"
 done < "$temp_file"
 
 rm -f "$temp_file"
