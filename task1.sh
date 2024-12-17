@@ -35,7 +35,7 @@ declare -A name_count
 
 temp_file=$(mktemp)
 awk -F, '{
-  gsub(/^"|"$/, "", $0);
+  gsub(/^"|"$/, $0);
   print
 }' "$input_file" > "$temp_file"
 
