@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 if [ -z "$1" ]; then
   echo "Usage: $0 path/to/accounts.csv"
   exit 1
@@ -8,12 +9,14 @@ fi
 input_file="$1"
 output_file="accounts_new.csv"
 
+# Funkcja formatowania imienia i nazwiska
 format_name() {
   local first_name="$1"
   local surname="$2"
   echo "${first_name^} ${surname^}"  # Pierwsze litery dużymi
 }
 
+# Funkcja generowania emaila
 generate_email() {
   local first_name="$1"
   local surname="$2"
@@ -34,15 +37,15 @@ generate_email() {
 
 declare -A name_count
 
-# Czyszczenie danych wejściowych
+# Czyszczenie danych wejściowych - usuwanie błędów w strukturze CSV
 temp_file=$(mktemp)
 awk -F, '{
-  gsub(/^"|"$/, "", $0);  # Usuń cudzysłowy z początku i końca
+  gsub(/^"|"$/, "", $0);  # Usuń nadmiarowe cudzysłowy
   gsub(/,+$/, "", $0);   # Usuń nadmiarowe przecinki na końcu
   print
 }' "$input_file" > "$temp_file"
 
-# Pierwsza pętla do zliczania wystąpień imienia i nazwiska
+# Liczenie wystąpień imion i nazwisk
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     continue
@@ -52,7 +55,7 @@ while IFS=, read -r id location name title email department; do
   name_count["$full_name"]=$((name_count["$full_name"] + 1))
 done < "$temp_file"
 
-# Druga pętla do przetwarzania danych
+# Przetwarzanie danych
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
     echo "$id,$location,$name,$title,$email,$department" >> "$output_file"
@@ -60,6 +63,7 @@ while IFS=, read -r id location name title email department; do
   fi
 
   # Wyodrębnianie imienia i nazwiska
+  name=$(echo "$name" | sed 's/"//g') # Usuwanie cudzysłowów wokół imienia
   first_name="${name%% *}"
   surname="${name##* }"
 
