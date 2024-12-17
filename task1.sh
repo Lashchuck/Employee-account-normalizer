@@ -32,6 +32,11 @@ generate_email() {
 declare -A name_count
 
 temp_file=$(mktemp)
+awk -F, '{
+  gsub(/^"|"$/, "", $0);
+  gsub(/,+$/, "", $0);
+  print
+}' "$input_file" > "$temp_file"
 
 while IFS=, read -r id location name title email department; do
   if [[ "$id" == "id" ]]; then
