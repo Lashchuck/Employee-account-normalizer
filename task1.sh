@@ -31,7 +31,6 @@ generate_email() {
 > "$output_file"
 
 declare -A name_count
-declare -A email_map
 
 temp_file=$(mktemp)
 awk -F, '{
@@ -47,7 +46,6 @@ while IFS=, read -r id location name title email department; do
 
   full_name="${name,,}"
   name_count["$full_name"]=$((name_count["$full_name"] + 1))
-  email_map["$email"]="$full_name"
 done < "$temp_file"
 
 while IFS=, read -r id location name title email department; do
