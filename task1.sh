@@ -33,7 +33,7 @@ declare -A name_count
 
 temp_file=$(mktemp)
 awk '{
-  gsub(/"Director|Manager/, "&");
+  gsub(/"[^"]*"/, "", $0);
   gsub(/^"|"$/, "");
   print
 }' "$input_file" > "$temp_file"
@@ -50,6 +50,7 @@ done < "$temp_file"
 while IFS=, read -r id location name title email department
 do
   if [[ "$id" == "id" ]]; then
+    echo "$id,$location,$name,$title,$email,$department" >> "$output_file"
     continue
   fi
 
