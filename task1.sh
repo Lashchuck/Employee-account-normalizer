@@ -32,20 +32,20 @@ declare -A name_count
 
 temp_file=$(mktemp)
 
-# Parsing CSV and writing to temporary file with full double quote and comma handling
+# Parsowanie CSV i zapis do pliku tymczasowego z pełną obsługą cudzysłowów i przecinków
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
-  NR==1 { print; next }                        # Copy the header without changes
+  NR==1 { print; next }                        # Przepisz nagłówek bez zmian
   {
-    gsub(/\r/, "");                            # Remove carriage return characters
+    gsub(/\r/, "");                            # Usuń znaki powrotu karetki
     for (i = 1; i <= NF; i++) {
-      gsub(/^"|"$/, "", $i)                    # Remove surrounding quotes
+      gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
     }
     print
   }
 ' "$input_file" > "$temp_file"
 
-# First pass: count name occurrences
+# Pierwsze przejście: zliczanie wystąpień nazw
 while IFS=, read -r id location name title email department; do
   [[ "$id" == "id" ]] && continue
   first_name="${name%% *}"
@@ -54,10 +54,10 @@ while IFS=, read -r id location name title email department; do
   name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
 done < "$temp_file"
 
-# Second pass: generate the result
+# Drugie przejście: generowanie wyniku
 {
   read -r header
-  printf "%s\n" "$header" > "$output_file"  # Write header
+  printf "%s\n" "$header" > "$output_file"  # Zapis nagłówka
 
   while IFS=, read -r id location name title email department; do
     first_name="${name%% *}"
@@ -66,7 +66,7 @@ done < "$temp_file"
     count=${name_count["${first_name:0:1}${surname,,}"]}
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-    # Correctly generating line with handling fields containing commas
+    # Poprawne generowanie linii z obsługą pól zawierających przecinki
     printf "%s,%s,%s,\"%s\",%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
   done
