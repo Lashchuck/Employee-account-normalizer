@@ -66,7 +66,7 @@ while IFS=, read -r id location name title email department; do
   final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
   # Correctly preserve the full 'title' and 'department' values
-  printf "%s,%s,%s,\"%s\", %s\n, \"%s\"" \
+  printf "%s,%s,%s,\"%s\",\"%s\",%s\n" \
     "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
 done < "$temp_file"
 
