@@ -1,33 +1,59 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-  echo "Usage: ./task1.sh accounts.csv"
-  exit 1
+if [ $# -ne 1 ]; then
+    echo "Usage: $0 path_to_accounts_csv"
+    exit 1
 fi
 
 input_file="$1"
 output_file="accounts_new.csv"
 
-# Process each line in the input file
-awk -F, -v OFS=, '
-BEGIN {
-  print "ID,Location,Name,Role,Email"
+if [ ! -f "$input_file" ]; then
+    echo "File not found!"
+    exit 1
+fi
+
+# Function to format name
+format_name() {
+  local name="$1"
+  local first_name="${name%%,*}"
+  local surname="${name##*,}"
+
+  # Format the first letter of the first name to uppercase and the rest to lowercase
+  formatted_first_name=$(echo "${first_name:0:1}" | awk '{print tolower($0)}')$(echo "${first_name:1}" | awk '{print tolower($0)}')
+
+  # Format the surname to lowercase
+  formatted_surname=$(echo "$surname" | awk '{print tolower($0)}')
+
+  echo "$formatted_first_name $formatted_surname"
 }
-{
-  # Capitalize first letter of name/surname and lowercase the rest
-  name = toupper(substr($3,1,1)) tolower(substr($3,2)) " " toupper(substr($4,1,1)) tolower(substr($4,2))
 
-  # Update email format
-  email = tolower(substr($3,1,1)) tolower(substr($4)) "@" "abc.com"
+# Function to generate email
+generate_email() {
+  local formatted_name="$1"
+  local location_id="$2"
 
-  # Include location_id in the email
-  split($1, id_parts, "-")
-  location_id = id_parts[2]
-  email = email location_id
-
-  # Print the updated line to the new file
-  print $1, $2, name, $4, email
+  # Use formatted first name initial and lowercase surname for the email
+  echo "$(echo "${formatted_name,,}")${location_id}@abc.com"
 }
-' "$input_file" > "$output_file"
 
-echo "Updated file saved as $output_file"
+# Create or clear the output file
+> "$output_file"
+
+while IFS=, read -r id location name title email department
+do
+  if [[ "$id" == "id" ]]; then
+    continue
+  fi
+
+  # Extract first name and surname
+  first_name="${name%%,*}"
+  surname="${name##*,}"
+
+  formatted_name=$(format_name "$first_name,$surname")
+  email=$(generate_email "$formatted_name" "$location")
+
+  echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
+done < "$input_file"
+
+echo "File '$output_file' created successfully."
