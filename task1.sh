@@ -20,11 +20,11 @@ generate_email() {
   local location_id="$3"
   local count="$4"
 
-  local formatted_email="${first_name:0:1}${surname,,}"
+  local formatted_email="${first_name,,}${surname,,}"
   if [ "$count" -gt 1 ]; then
-    echo "${formatted_email,,}${location_id}@abc.com"
+    echo "${formatted_email}${location_id}@abc.com"
   else
-    echo "${formatted_email,,}@abc.com"
+    echo "${formatted_email}@abc.com"
   fi
 }
 
@@ -58,7 +58,7 @@ while IFS=, read -r id location name title email department; do
   surname="${name##* }"
 
   formatted_name=$(format_name "$first_name" "$surname")
-  full_name="${name,,}"
+  full_name="${first_name,,}${surname,,}"
   count=${name_count["$full_name"]}
 
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
