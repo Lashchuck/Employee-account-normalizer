@@ -1,85 +1,94 @@
 #!/bin/bash
 
-if [ -z "$1" ]; then
-  printf "Usage: %s path/to/accounts.csv\n" "$0" >&2
-  exit 1
+if [ $# -lt 1 ]
+then
+    echo "Usage: ./task1.sh /path/to/accounts.csv"
+    exit 0
 fi
 
-input_file="$1"
-output_file="accounts_new.csv"
+file=$1
 
-format_name() {
-  local first_name="$1"
-  local surname="$2"
-  printf "%s %s" "${first_name^}" "${surname^}"
-}
+# Exit if provided file doesn't exist
+if [ ! -f $file ]
+then
+    echo "File $file doesn't exist"
+    exit 1
+fi
 
-generate_email() {
-  local first_name="$1"
-  local surname="$2"
-  local location_id="$3"
-  local count="$4"
+# Extract directory from file
+path=$(dirname $file)
 
-  local formatted_email="${first_name:0:1}${surname,,}"
-  if [[ "$count" -gt 1 ]]; then
-    printf "%s%s@abc.com" "${formatted_email,,}" "${location_id}"
-  else
-    printf "%s@abc.com" "${formatted_email,,}"
-  fi
-}
+# Processing csv file with awk
+awk '
+    # Set Field Separator and Output Field Separators
+    BEGIN { FS=","; OFS=",";}
 
-declare -A email_count  # Tablica do śledzenia unikalnych e-maili
-declare -A name_count   # Tablica do zliczania nazw
-
-temp_file=$(mktemp)
-
-# Parsowanie CSV z zachowaniem cudzysłowów i scalaniem przecinków w `title`
-awk -v OFS=',' '
-  BEGIN { FS=OFS="," }
-  NR==1 { print; next }                        # Przepisz nagłówek bez zmian
-  {
-    line = $0                                  # Pobierz cały wiersz
-    if (line ~ /^".*,.*"/) {                   # Jeśli `title` zaczyna się od cudzysłowu i zawiera przecinki
-      while (line !~ /".*".*$/) {              # Dopóki wiersz nie jest kompletny
-        getline next_line                      # Pobierz kolejny wiersz
-        line = line next_line                  # Scal wiersze
-      }
+    # Skip first row, as it contains only column names
+    NR == 1 {
+        print
     }
-    print line                                 # Wydrukuj kompletny wiersz
-  }
-' "$input_file" > "$temp_file"
 
-# Pierwsze przejście: Zliczanie wystąpień nazw
-while IFS=, read -r id location name title email department; do
-  [[ "$id" == "id" ]] && continue
-  first_name="${name%% *}"
-  surname="${name##* }"
-  formatted_name="${first_name:0:1}${surname,,}"
-  name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
-done < "$temp_file"
+    # First pass through file to check for uniqueness of emails
+    NR == FNR {
+        # 3rd field contains name
+        # splitting name to first name and last name
+        split($3, name, / /)
+        email = substr(name[1], 1, 1) name[2]
+        email = tolower(email)
+        ++counter[email]
+    }
 
-# Drugie przejście: Generowanie wyniku
-{
-  read -r header
-  printf "%s\n" "$header" > "$output_file"  # Zapis nagłówka
+    # Second pass through file, skipping first line
+    NR > FNR && FNR != 1{
 
-  while IFS=, read -r id location name title email department; do
-    # Formatowanie imienia i nazwiska
-    first_name="${name%% *}"
-    surname="${name##* }"
-    formatted_name=$(format_name "$first_name" "$surname")
+        # Create an array from fields as the default FS processes
+        # quoted commas incorrectly
 
-    # Generowanie unikalnego e-maila
-    base_email="${first_name:0:1}${surname,,}"
-    count=${name_count["$base_email"]}
-    unique_email=$(generate_email "$first_name" "$surname" "$location" "$count")
+        j=0
+        inside_quotes=0
+        for(i=1;i<=NF;i++) {
+            # Opening quote, save to new field,
+            # set inside_quotes to true
+            if($i ~ /^\"/) {
+                inside_quotes=1
+                j++
+                fields[j] = $i
+            }
+            # Closing quote, append to last field, set inside_quote to false
+            else if($i ~ /\"$/)  {
+                inside_quotes=0
+                fields[j] = fields[j] OFS $i
+            }
+            # middle of quoted text, append to last field
+            else if (inside_quotes==1) {
+                fields[j] = fields[j] OFS $i
+            }
+            # outside of quotes, save to new field
+            else {
+                j++
+                fields[j] = $i
+            }
+        }
+        # fields[3] contains name
+        # Split name by space
+        split(fields[3], name, / /)
+        # Change the first character to uppercase, all other characters to lower case
+        name[1] = toupper(substr(name[1], 1, 1)) tolower(substr(name[1], 2))
+        name[2] = toupper(substr(name[2], 1, 1)) tolower(substr(name[2], 2))
+        # Change the 3rd field to new value
+        fields[3] = name[1] " " name[2]
 
+        # email format: flast_name@abc.com
+        email = substr(name[1], 1, 1) name[2]
+        email = tolower(email)
 
+        # if the email is not unique, append location id
+        if (counter[email] > 1) email=email fields[2]
+        fields[5] = email "@abc.com"
 
-      printf "%s,%s,%s,%s,%s,%s\n" \
-        "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
-  done
-} < "$temp_file"
-
-rm -f "$temp_file"
-printf "The script has finished processing. The file '%s' has been created.\n" "$output_file"
+        # Set new values for all 6 columns
+        NF=6
+        for(i=1;i<=NF;i++) $i=fields[i]
+        print
+    }
+' $file $file > $path/accounts_new.csv
