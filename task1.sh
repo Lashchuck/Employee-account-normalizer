@@ -33,7 +33,7 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Parsowanie CSV z obsługą przecinków i cudzysłowów
+# Parsowanie CSV z zachowaniem cudzysłowów i scalaniem przecinków w `title`
 awk -v OFS=',' '
   BEGIN { FS=OFS="," }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
@@ -74,10 +74,10 @@ done < "$temp_file"
     count=${name_count["$base_email"]}
     unique_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-    # Ignoruj istniejące e-maile i użyj wygenerowanego
+    # Nadpisanie email generowanym adresem
     email="$unique_email"
 
-    # Zapis do pliku wynikowego z poprawnym formatowaniem
+    # Poprawny zapis do pliku wynikowego
     if [[ "$title" == *,* ]]; then
       # Jeśli `title` zawiera przecinek, dodaj cudzysłowy dookoła pola
       printf "%s,%s,%s,\"%s\",%s,%s\n" \
