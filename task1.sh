@@ -75,8 +75,7 @@ done < "$temp_file"
     count=${name_count["$base_email"]}
     unique_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-    # Ignoruj istniejące e-maile i użyj wygenerowanego
-    email="$unique_email"
+
 
     # Zapis do pliku wynikowego z poprawnym formatowaniem
     printf "%s,%s,%s,%s,%s,%s\n" \
