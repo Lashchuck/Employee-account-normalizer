@@ -87,7 +87,7 @@ done < "$temp_file"
     # Śledzenie użycia e-maila
     email_count["$unique_email"]=1
 
-    # Zapis do pliku wynikowego z poprawnym formatowaniem
+    # Poprawne formatowanie wyjścia
     printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
   done
