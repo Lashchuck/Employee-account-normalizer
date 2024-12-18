@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 if [ -z "$1" ]; then
   printf "Usage: %s path/to/accounts.csv\n" "$0" >&2
   exit 1
@@ -34,13 +33,19 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Parsowanie CSV z obsługą przecinków w polach i cudzysłowów
+# Poprawione parsowanie CSV, aby obsługiwać przecinki w kolumnie `title`
 awk -v OFS=',' '
-  BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
+  BEGIN { FS=OFS="," }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
   {
-    gsub(/\r/, "");                            # Usuń znaki powrotu karetki
-    print
+    line = $0                                  # Pobierz cały wiersz
+    if (line ~ /".*,.*"/) {                    # Jeśli są przecinki w cudzysłowach
+      while (line !~ /".*".*$/) {              # Dopóki wiersz nie jest kompletny
+        getline next_line                      # Pobierz kolejny wiersz
+        line = line next_line                  # Scal wiersze
+      }
+    }
+    print line                                 # Wydrukuj kompletny wiersz
   }
 ' "$input_file" > "$temp_file"
 
@@ -59,14 +64,6 @@ done < "$temp_file"
   printf "%s\n" "$header" > "$output_file"  # Zapis nagłówka
 
   while IFS=, read -r id location name title email department; do
-    # Obsługa pola `title` z cudzysłowami i przecinkami
-    if [[ "$title" == \"* && "$title" != *\" ]]; then
-      while IFS=, read -r extra; do
-        title="$title,$extra"  # Łączenie fragmentów pola `title`
-        [[ "$title" == *\" ]] && break
-      done
-    fi
-
     # Formatowanie imienia i nazwiska
     first_name="${name%% *}"
     surname="${name##* }"
@@ -84,9 +81,14 @@ done < "$temp_file"
     # Śledzenie użycia e-maila
     email_count["$unique_email"]=1
 
+    # Jeśli email w danych wejściowych jest pusty, generujemy nowy
+    if [[ -z "$email" ]]; then
+      email="$unique_email"
+    fi
+
     # Zapis do pliku wynikowego
     printf "%s,%s,%s,%s,%s,%s\n" \
-      "$id" "$location" "$formatted_name" "$title" "$unique_email" "$department" >> "$output_file"
+      "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
   done
 } < "$temp_file"
 
