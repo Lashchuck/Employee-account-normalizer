@@ -47,6 +47,7 @@ awk '
             else if (inside_quotes==1) {
                 fields[j] = fields[j] OFS $i
             }
+            # outside of quotes, save to new field
             else {
                 j++
                 fields[j] = $i
@@ -67,7 +68,7 @@ awk '
         fields[3] = name[1] " " name[2]
 
         email = substr(name[1], 1, 1) name[2]
-        gsub("-", "", email)
+        gsub(" ", "", email)
         email = tolower(email)
 
         if (counter[email] > 1) email=email fields[2]
@@ -78,5 +79,6 @@ awk '
         print
     }
 ' "$file" "$file" > "$path/accounts_new.csv"
+
 
 echo "The script has finished processing. The file 'accounts_new.csv' has been created."
