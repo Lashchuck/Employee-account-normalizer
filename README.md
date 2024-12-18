@@ -1,31 +1,26 @@
-# DevOps Essentials: Final task 1
+# Employee account normalizer
 
-> **Please use branch `task1` for this task that already exist in your forked repository after you has been started task.**
+Repository contains a Bash script designed to automate the normalization of employee account data. 
 
-## Bash Task 1
+## Features
+- **Name Normalization:** Converts the format of the name column.
+- **Email Normalization:** Updates the email column to use the domain @abc and handles duplicate email cases by appending the location_id to make each email unique.
+  
+  Email format: first letter of the first name and the full last name in lowercase (e.g., jdoe@abc).
+- **Output File:** Generates a new file, accounts_new.csv, with the standardized data.
 
-Company ABC has uncontrolled process of employee’s accounts creation. Currently process means
-adding names, email and other personal data manually to the accounts.csv file without any rules.
-Department head has decided to improve it based on the naming convention implementation. Good
-idea for newcomers, but what to do with current user’s list? You have been asked to help. Could you please
-develop automated way (bash script) and create new accounts_new.csv file based on current
-accounts.csv and below.
-1) Need to update column name.\
-Name format: first letter of name/surname uppercase and all other letters lowercase.
-2) Need to update column email with domain @abc.\
-Email format: first letter from name and full surname, lowercase.\
-**Equals emails should contain location_id.**
-3) Sripts should has name task1.sh
-4) Path to accounts.csv file should be as argument to the script.
-## Definition of done.
-Developed bash script which automatically creates accounts_new.csv and updates columns name and
-email based on the rules above.\
-**Script should not use any additional installed packages!**
+## Usage
+**Prerequisites:** 
+- Bash shell environment.
+- Ensure the input file accounts.csv exists and follows the required structure.
+  
+**Running the script:** 
+
+```shell
+./task1.sh path/to/accounts.csv
+```
 
 ## Example:
-```bash
-./task1.sh accounts.csv
-```
 ### was:
 ```csv
 2,1,Christina Gonzalez,Director,,
