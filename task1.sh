@@ -33,19 +33,18 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Poprawione parsowanie CSV z usuwaniem cudzysłowów i scalaniem wierszy
+# Poprawione parsowanie CSV z obsługą wyjątków dla kolumny `title`
 awk -v OFS=',' '
   BEGIN { FS=OFS="," }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
   {
     line = $0                                  # Pobierz cały wiersz
-    if (line ~ /".*,.*"/) {                    # Jeśli są przecinki w cudzysłowach
+    if (line ~ /^".*,.*"/) {                   # Jeśli `title` zaczyna się od cudzysłowu
       while (line !~ /".*".*$/) {              # Dopóki wiersz nie jest kompletny
         getline next_line                      # Pobierz kolejny wiersz
         line = line next_line                  # Scal wiersze
       }
     }
-    gsub(/"/, "", line)                        # Usuń wszystkie cudzysłowy
     print line                                 # Wydrukuj kompletny wiersz
   }
 ' "$input_file" > "$temp_file"
@@ -75,11 +74,19 @@ done < "$temp_file"
     count=${name_count["$base_email"]}
     unique_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-
+    # Ignoruj istniejące e-maile i użyj wygenerowanego
+    email="$unique_email"
 
     # Zapis do pliku wynikowego z poprawnym formatowaniem
-    printf "%s,%s,%s,%s,%s,%s\n" \
-      "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
+    if [[ "$title" == \"* ]]; then
+      # Jeśli `title` zaczyna się od cudzysłowu, dodaj cudzysłowy dookoła pola
+      printf "%s,%s,%s,\"%s\",%s,%s\n" \
+        "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
+    else
+      # W przeciwnym razie normalne pole `title`
+      printf "%s,%s,%s,%s,%s,%s\n" \
+        "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
+    fi
   done
 } < "$temp_file"
 
