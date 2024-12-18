@@ -45,7 +45,6 @@ awk -v OFS=',' '
         line = line next_line                  # Scal wiersze
       }
     }
-    gsub(/^"|"$/, "", line)                    # Usuń otaczające cudzysłowy z całego wiersza
     print line                                 # Wydrukuj kompletny wiersz
   }
 ' "$input_file" > "$temp_file"
