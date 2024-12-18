@@ -33,12 +33,15 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Parsowanie CSV z obsługą przecinków w polach i usuwaniem otaczających cudzysłowów
+# Parsowanie CSV z obsługą pól zawierających przecinki i cudzysłowy
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
   {
     gsub(/\r/, "");                            # Usuń znaki powrotu karetki
+    for (i = 1; i <= NF; i++) {
+      gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
+    }
     print
   }
 ' "$input_file" > "$temp_file"
@@ -58,6 +61,15 @@ done < "$temp_file"
   printf "%s\n" "$header" > "$output_file"  # Zapis nagłówka
 
   while IFS=, read -r id location name title email department; do
+    # Jeśli `title` zawiera cudzysłowy i przecinek, poprawnie połącz wszystkie części
+    if [[ "$title" == *\"* ]]; then
+      while [[ "$title" != *\" ]]; do
+        read -r next_piece
+        title="$title,$next_piece"  # Łączenie kolejnych fragmentów w kolumnie title
+      done
+      title=$(echo "$title" | sed 's/^"//;s/"$//')  # Usuń cudzysłowy otaczające
+    fi
+
     # Formatowanie imienia i nazwiska
     first_name="${name%% *}"
     surname="${name##* }"
