@@ -37,16 +37,16 @@ temp_file=$(mktemp)
 # Parsowanie CSV z obsługą przecinków w polach i cudzysłowów
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
-  NR==1 { print; next }
+  NR==1 { print; next }                        # Przepisz nagłówek bez zmian
   {
-    gsub(/\r/, "");  # Usuń znaki powrotu karetki
+    gsub(/\r/, "");                            # Usuń znaki powrotu karetki
     print
   }
 ' "$input_file" > "$temp_file"
 
 # Pierwsze przejście: Zliczanie wystąpień nazw
 while IFS=, read -r id location name title email department; do
-  [[ "$id" == "id" ]] && continue  # Pomijaj nagłówek
+  [[ "$id" == "id" ]] && continue
   first_name="${name%% *}"
   surname="${name##* }"
   formatted_name="${first_name:0:1}${surname,,}"
