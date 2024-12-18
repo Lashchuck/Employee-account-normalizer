@@ -77,16 +77,9 @@ done < "$temp_file"
     # Nadpisanie email generowanym adresem
     email="$unique_email"
 
-    # Poprawny zapis do pliku wynikowego
-    if [[ "$title" == *,* ]]; then
-      # Jeśli `title` zawiera przecinek, dodaj cudzysłowy dookoła pola
-      printf "%s,%s,%s,\"%s\",%s,%s\n" \
-        "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
-    else
-      # W przeciwnym razie normalne pole `title`
+
       printf "%s,%s,%s,%s,%s,%s\n" \
         "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
-    fi
   done
 } < "$temp_file"
 
