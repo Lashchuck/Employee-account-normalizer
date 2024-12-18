@@ -33,7 +33,7 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Parsowanie CSV z obsługą pól zawierających przecinki i cudzysłowy
+# Parsowanie CSV z obsługą przecinków w polach i usuwaniem otaczających cudzysłowów
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
@@ -78,7 +78,7 @@ done < "$temp_file"
     # Śledzenie użycia e-maila
     email_count["$unique_email"]=1
 
-    # Zapis do pliku wynikowego z zachowaniem poprawnego formatowania pól
+    # Zapis do pliku wynikowego
     printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$unique_email" "$department" >> "$output_file"
   done
