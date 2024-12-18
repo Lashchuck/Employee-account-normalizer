@@ -72,22 +72,16 @@ done < "$temp_file"
 
     # Generowanie unikalnego e-maila
     base_email="${first_name:0:1}${surname,,}"
-    unique_email="${base_email,,}@abc.com"
-
-    # Dodanie location_id w przypadku powtórzeń
-    if [[ -n "${email_count["$unique_email"]}" || ${name_count["$base_email"]} -gt 1 ]]; then
-      unique_email="${base_email,,}${location}@abc.com"
-    fi
-
-    # Jeśli email w danych wejściowych jest pusty, generujemy nowy
-    if [[ -z "$email" ]]; then
-      email="$unique_email"
-    fi
+    count=${name_count["$base_email"]}
+    unique_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
     # Śledzenie użycia e-maila
     email_count["$unique_email"]=1
 
-    # Poprawne formatowanie wyjścia
+    # Ignoruj istniejące e-maile i użyj wygenerowanego
+    email="$unique_email"
+
+    # Zapis do pliku wynikowego z poprawnym formatowaniem
     printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
   done
