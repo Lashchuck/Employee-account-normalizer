@@ -33,18 +33,19 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Poprawione parsowanie CSV z obsługą wyjątków dla kolumny `title`
+# Parsowanie CSV z obsługą przecinków i cudzysłowów
 awk -v OFS=',' '
   BEGIN { FS=OFS="," }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
   {
     line = $0                                  # Pobierz cały wiersz
-    if (line ~ /^".*,.*"/) {                   # Jeśli `title` zaczyna się od cudzysłowu
+    if (line ~ /^".*,.*"/) {                   # Jeśli `title` zaczyna się od cudzysłowu i zawiera przecinki
       while (line !~ /".*".*$/) {              # Dopóki wiersz nie jest kompletny
         getline next_line                      # Pobierz kolejny wiersz
         line = line next_line                  # Scal wiersze
       }
     }
+    gsub(/^"|"$/, "", line)                    # Usuń otaczające cudzysłowy z całego wiersza
     print line                                 # Wydrukuj kompletny wiersz
   }
 ' "$input_file" > "$temp_file"
@@ -78,8 +79,8 @@ done < "$temp_file"
     email="$unique_email"
 
     # Zapis do pliku wynikowego z poprawnym formatowaniem
-    if [[ "$title" == \"* ]]; then
-      # Jeśli `title` zaczyna się od cudzysłowu, dodaj cudzysłowy dookoła pola
+    if [[ "$title" == *,* ]]; then
+      # Jeśli `title` zawiera przecinek, dodaj cudzysłowy dookoła pola
       printf "%s,%s,%s,\"%s\",%s,%s\n" \
         "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
     else
