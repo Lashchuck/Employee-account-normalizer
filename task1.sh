@@ -28,7 +28,8 @@ generate_email() {
   fi
 }
 
-declare -A name_count
+declare -A email_count  # Tablica do śledzenia unikalnych e-maili
+declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
@@ -45,7 +46,7 @@ awk -v OFS=',' '
   }
 ' "$input_file" > "$temp_file"
 
-# Pierwsze przejście: zliczanie wystąpień nazw
+# Pierwsze przejście: Zliczanie wystąpień nazw
 while IFS=, read -r id location name title email department; do
   [[ "$id" == "id" ]] && continue
   first_name="${name%% *}"
@@ -54,7 +55,7 @@ while IFS=, read -r id location name title email department; do
   name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
 done < "$temp_file"
 
-# Drugie przejście: generowanie wyniku
+# Drugie przejście: Generowanie wyniku z unikalnymi e-mailami
 {
   read -r header
   printf "%s\n" "$header" > "$output_file"  # Zapis nagłówka
@@ -63,15 +64,24 @@ done < "$temp_file"
     first_name="${name%% *}"
     surname="${name##* }"
     formatted_name=$(format_name "$first_name" "$surname")
-    count=${name_count["${first_name:0:1}${surname,,}"]}
-    final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-    # Poprawne generowanie linii z obsługą pól zawierających przecinki
+    # Generowanie wstępnego e-maila
+    base_email="${first_name:0:1}${surname,,}"
+    unique_email="${base_email,,}@abc.com"
+
+    # Dodanie location_id w przypadku powtórzeń
+    if [[ -n "${email_count["$unique_email"]}" || ${name_count["$base_email"]} -gt 1 ]]; then
+      unique_email="${base_email,,}${location}@abc.com"
+    fi
+
+    # Śledzenie użycia e-maila
+    email_count["$unique_email"]=1
+
+    # Zapis do pliku wynikowego
     printf "%s,%s,%s,%s,%s,%s\n" \
-      "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
+      "$id" "$location" "$formatted_name" "$title" "$unique_email" "$department" >> "$output_file"
   done
 } < "$temp_file"
 
 rm -f "$temp_file"
-
 printf "The script has finished processing. The file '%s' has been created.\n" "$output_file"
