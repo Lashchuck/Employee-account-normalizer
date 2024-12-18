@@ -39,9 +39,6 @@ awk -v OFS=',' '
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
   {
     gsub(/\r/, "");                            # Usuń znaki powrotu karetki
-    for (i = 1; i <= NF; i++) {
-      gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
-    }
     print
   }
 ' "$input_file" > "$temp_file"
