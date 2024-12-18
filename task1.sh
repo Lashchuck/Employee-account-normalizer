@@ -9,14 +9,14 @@ fi
 file=$1
 
 # Exit if provided file doesn't exist
-if [ ! -f $file ]
+if [ ! -f "$file" ]
 then
     echo "File $file doesn't exist"
     exit 1
 fi
 
 # Extract directory from file
-path=$(dirname $file)
+path=$(dirname "$file")
 
 # Processing csv file with awk
 awk '
@@ -72,14 +72,25 @@ awk '
         # fields[3] contains name
         # Split name by space
         split(fields[3], name, / /)
-        # Change the first character to uppercase, all other characters to lower case
+        # Change the first character of each part of the name to uppercase, others to lowercase
         name[1] = toupper(substr(name[1], 1, 1)) tolower(substr(name[1], 2))
-        name[2] = toupper(substr(name[2], 1, 1)) tolower(substr(name[2], 2))
+
+        # Handle surnames with hyphens
+        split(name[2], parts, /-/)
+        for (k in parts) {
+            parts[k] = toupper(substr(parts[k], 1, 1)) tolower(substr(parts[k], 2))
+        }
+        name[2] = parts[1]
+        for (k=2; k in parts; k++) {
+            name[2] = name[2] "-" parts[k]
+        }
+
         # Change the 3rd field to new value
         fields[3] = name[1] " " name[2]
 
         # email format: flast_name@abc.com
         email = substr(name[1], 1, 1) name[2]
+        gsub("-", "", email) # Remove hyphens for email
         email = tolower(email)
 
         # if the email is not unique, append location id
@@ -91,6 +102,6 @@ awk '
         for(i=1;i<=NF;i++) $i=fields[i]
         print
     }
-' $file $file > $path/accounts_new.csv
+' "$file" "$file" > "$path/accounts_new.csv"
 
 echo "The script has finished processing. The file 'accounts_new.csv' has been created."
