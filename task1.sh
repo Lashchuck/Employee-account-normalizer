@@ -37,11 +37,11 @@ temp_file=$(mktemp)
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
   NR==1 { print; next }
-                       for (i = 1; i <= NF; i++) {
-                             gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
-                           }# Przepisz nagłówek bez zmian
   {
-    gsub(/\r/, "");                            # Usuń znaki powrotu karetki
+    gsub(/\r/, "");
+    for (i = 1; i <= NF; i++) {
+          gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
+        }
     print
   }
 ' "$input_file" > "$temp_file"
