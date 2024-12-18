@@ -78,9 +78,6 @@ done < "$temp_file"
     # Śledzenie użycia e-maila
     email_count["$unique_email"]=1
 
-    # Usuwanie cudzysłowów w `title` (jeśli istnieją)
-    title=$(echo "$title" | sed 's/^"//; s/"$//')
-
     # Zapis do pliku wynikowego
     printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$unique_email" "$department" >> "$output_file"
