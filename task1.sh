@@ -38,14 +38,14 @@ awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
   NR==1 { print; next }
   {
-    gsub(/\r/, "");
+    gsub(/\r/, "");  # Usuń znaki powrotu karetki
     print
   }
 ' "$input_file" > "$temp_file"
 
 # Pierwsze przejście: Zliczanie wystąpień nazw
 while IFS=, read -r id location name title email department; do
-  [[ "$id" == "id" ]] && continue
+  [[ "$id" == "id" ]] && continue  # Pomijaj nagłówek
   first_name="${name%% *}"
   surname="${name##* }"
   formatted_name="${first_name:0:1}${surname,,}"
@@ -59,7 +59,7 @@ done < "$temp_file"
 
   while IFS=, read -r id location name title email department; do
     # Obsługa pola `title` z cudzysłowami i przecinkami
-    if [[ "$title" == \"* ]]; then
+    if [[ "$title" == \"* && "$title" != *\" ]]; then
       while IFS=, read -r extra; do
         title="$title,$extra"  # Łączenie fragmentów pola `title`
         [[ "$title" == *\" ]] && break
