@@ -40,7 +40,6 @@ awk -v OFS=',' '
     gsub(/\r/, "");                            # Usuń znaki powrotu karetki
     for (i = 1; i <= NF; i++) {
       gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
-      if (i == 4) gsub(/^"|"$/, "", $i)       # Usuń cudzysłowy tylko z 4 kolumny (title)
     }
     print
   }
@@ -68,7 +67,7 @@ done < "$temp_file"
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
     # Poprawne generowanie linii z obsługą pól zawierających przecinki
-    printf "%s,%s,%s,%s,%s,%s" \
+    printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
   done
 } < "$temp_file"
