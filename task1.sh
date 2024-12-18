@@ -36,7 +36,10 @@ temp_file=$(mktemp)
 # Parsowanie CSV z obsługą przecinków w polach i cudzysłowów
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
-  NR==1 { print; next }                        # Przepisz nagłówek bez zmian
+  NR==1 { print; next }
+                       for (i = 1; i <= NF; i++) {
+                             gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
+                           }# Przepisz nagłówek bez zmian
   {
     gsub(/\r/, "");                            # Usuń znaki powrotu karetki
     print
