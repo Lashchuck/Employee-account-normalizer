@@ -67,7 +67,7 @@ done < "$temp_file"
     final_email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
     # Poprawne generowanie linii z obsługą pól zawierających przecinki
-    printf "%s,%s,%s,\"%s\",%s,%s\n" \
+    printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$final_email" "$department" >> "$output_file"
   done
 } < "$temp_file"
