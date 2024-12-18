@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 if [ -z "$1" ]; then
   printf "Usage: %s path/to/accounts.csv\n" "$0" >&2
   exit 1
