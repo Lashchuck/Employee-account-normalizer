@@ -33,7 +33,7 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Poprawione parsowanie CSV, aby obsługiwać przecinki w kolumnie `title`
+# Poprawione parsowanie CSV z usuwaniem cudzysłowów w kolumnie `title`
 awk -v OFS=',' '
   BEGIN { FS=OFS="," }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
@@ -45,6 +45,7 @@ awk -v OFS=',' '
         line = line next_line                  # Scal wiersze
       }
     }
+    gsub(/"/, "", line)                        # Usuń wszystkie cudzysłowy
     print line                                 # Wydrukuj kompletny wiersz
   }
 ' "$input_file" > "$temp_file"
@@ -86,7 +87,7 @@ done < "$temp_file"
       email="$unique_email"
     fi
 
-    # Zapis do pliku wynikowego
+    # Zapis do pliku wynikowego z poprawnym formatowaniem
     printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$email" "$department" >> "$output_file"
   done
