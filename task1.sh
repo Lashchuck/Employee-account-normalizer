@@ -33,7 +33,7 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Parsowanie CSV z uwzględnieniem cudzysłowów i przecinków
+# Parsowanie CSV z usuwaniem cudzysłowów
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
@@ -55,7 +55,7 @@ while IFS=, read -r id location name title email department; do
   name_count["$formatted_name"]=$((name_count["$formatted_name"] + 1))
 done < "$temp_file"
 
-# Drugie przejście: Generowanie wyniku z unikalnymi e-mailami
+# Drugie przejście: Generowanie wyniku
 {
   read -r header
   printf "%s\n" "$header" > "$output_file"  # Zapis nagłówka
@@ -66,7 +66,7 @@ done < "$temp_file"
     surname="${name##* }"
     formatted_name=$(format_name "$first_name" "$surname")
 
-    # Generowanie wstępnego e-maila
+    # Generowanie unikalnego e-maila
     base_email="${first_name:0:1}${surname,,}"
     unique_email="${base_email,,}@abc.com"
 
@@ -78,8 +78,11 @@ done < "$temp_file"
     # Śledzenie użycia e-maila
     email_count["$unique_email"]=1
 
-    # Poprawne formatowanie kolumn z przecinkami
-    printf "%s,%s,%s,\"%s\",%s,%s\n" \
+    # Usuwanie cudzysłowów w `title` (jeśli istnieją)
+    title=$(echo "$title" | sed 's/^"//; s/"$//')
+
+    # Zapis do pliku wynikowego
+    printf "%s,%s,%s,%s,%s,%s\n" \
       "$id" "$location" "$formatted_name" "$title" "$unique_email" "$department" >> "$output_file"
   done
 } < "$temp_file"
