@@ -33,7 +33,7 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Poprawione parsowanie CSV z usuwaniem cudzysłowów w kolumnie `title`
+# Poprawione parsowanie CSV z usuwaniem cudzysłowów i scalaniem wierszy
 awk -v OFS=',' '
   BEGIN { FS=OFS="," }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
@@ -74,9 +74,6 @@ done < "$temp_file"
     base_email="${first_name:0:1}${surname,,}"
     count=${name_count["$base_email"]}
     unique_email=$(generate_email "$first_name" "$surname" "$location" "$count")
-
-    # Śledzenie użycia e-maila
-    email_count["$unique_email"]=1
 
     # Ignoruj istniejące e-maile i użyj wygenerowanego
     email="$unique_email"
