@@ -59,7 +59,7 @@ done < "$temp_file"
 
   while IFS=, read -r id location name title email department; do
     # Obsługa pola `title` z cudzysłowami i przecinkami
-    if [[ "$title" == \"* && "$title" != *\" ]]; then
+    if [[ "$title" == \"* ]]; then
       while IFS=, read -r extra; do
         title="$title,$extra"  # Łączenie fragmentów pola `title`
         [[ "$title" == *\" ]] && break
