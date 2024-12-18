@@ -1,5 +1,6 @@
 #!/bin/bash
 
+
 if [ -z "$1" ]; then
   printf "Usage: %s path/to/accounts.csv\n" "$0" >&2
   exit 1
@@ -33,7 +34,7 @@ declare -A name_count   # Tablica do zliczania nazw
 
 temp_file=$(mktemp)
 
-# Parsowanie CSV z usuwaniem cudzysłowów
+# Parsowanie CSV z usuwaniem otaczających cudzysłowów
 awk -v OFS=',' '
   BEGIN { FS=OFS=","; FPAT="([^,]+)|(\"[^\"]+\")" }
   NR==1 { print; next }                        # Przepisz nagłówek bez zmian
@@ -78,12 +79,16 @@ done < "$temp_file"
     # Śledzenie użycia e-maila
     email_count["$unique_email"]=1
 
-    # Usuwanie cudzysłowów w `title` (jeśli istnieją)
-    title=$(echo "$title" | sed 's/^"//; s/"$//')
+    # Połączenie `title` i `department` z zachowaniem poprawnego formatu
+    if [[ -n "$department" ]]; then
+      full_title="$title, $department"
+    else
+      full_title="$title"
+    fi
 
     # Zapis do pliku wynikowego
     printf "%s,%s,%s,%s,%s,%s\n" \
-      "$id" "$location" "$formatted_name" "$title" "$unique_email" "$department" >> "$output_file"
+      "$id" "$location" "$formatted_name" "$full_title" "$unique_email" "$department" >> "$output_file"
   done
 } < "$temp_file"
 
