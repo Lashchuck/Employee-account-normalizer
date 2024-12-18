@@ -42,13 +42,13 @@ awk -v FS="," -v OFS="," '
         for(i=1; i<=NF; i++) {
             # Opening quote, save to new field,
             # set inside_quotes to true
-            if($i ~ /^\"/) {
+            if($i ~ /^"/) {
                 inside_quotes=1
                 j++
                 fields[j] = $i
             }
             # Closing quote, append to last field, set inside_quote to false
-            else if($i ~ /\"$/)  {
+            else if($i ~ /"$/)  {
                 inside_quotes=0
                 fields[j] = fields[j] OFS $i
             }
@@ -68,7 +68,7 @@ awk -v FS="," -v OFS="," '
         # Change the first character to uppercase, all other characters to lower case
         name[1] = toupper(substr(name[1], 1, 1)) tolower(substr(name[1], 2))
         # For the last name, split into two parts if it's a two-part name
-        if (match(name[2], "-")) {
+        if (index(name[2], "-") > 0) {
             split(name[2], lastname, "-")
             lastname[1] = toupper(substr(lastname[1], 1, 1)) tolower(substr(lastname[1], 2))
             lastname[2] = toupper(substr(lastname[2], 1, 1)) tolower(substr(lastname[2], 2))
