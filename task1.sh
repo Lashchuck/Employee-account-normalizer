@@ -19,36 +19,43 @@ fi
 path=$(dirname $file)
 
 # Processing csv file with awk
-awk -v FS="," -v OFS="," '
+awk '
+    # Set Field Separator and Output Field Separators
+    BEGIN { FS=","; OFS=",";}
+
     # Skip first row, as it contains only column names
-    NR == 1 { print; next }
+    NR == 1 {
+        print
+    }
 
     # First pass through file to check for uniqueness of emails
     NR == FNR {
         # 3rd field contains name
         # splitting name to first name and last name
         split($3, name, / /)
-        email = tolower(substr(name[1], 1, 1) name[2])
+        email = substr(name[1], 1, 1) name[2]
+        email = tolower(email)
         ++counter[email]
-        next
     }
 
     # Second pass through file, skipping first line
-    NR > FNR && FNR != 1 {
+    NR > FNR && FNR != 1{
+
         # Create an array from fields as the default FS processes
         # quoted commas incorrectly
+
         j=0
         inside_quotes=0
-        for(i=1; i<=NF; i++) {
+        for(i=1;i<=NF;i++) {
             # Opening quote, save to new field,
             # set inside_quotes to true
-            if($i ~ /^"/) {
+            if($i ~ /^\"/) {
                 inside_quotes=1
                 j++
                 fields[j] = $i
             }
             # Closing quote, append to last field, set inside_quote to false
-            else if($i ~ /"$/)  {
+            else if($i ~ /\"$/)  {
                 inside_quotes=0
                 fields[j] = fields[j] OFS $i
             }
@@ -67,19 +74,13 @@ awk -v FS="," -v OFS="," '
         split(fields[3], name, / /)
         # Change the first character to uppercase, all other characters to lower case
         name[1] = toupper(substr(name[1], 1, 1)) tolower(substr(name[1], 2))
-        # For the last name, split into two parts if it's a two-part name
-        if (index(name[2], "-") > 0) {
-            split(name[2], lastname, "-")
-            lastname[1] = toupper(substr(lastname[1], 1, 1)) tolower(substr(lastname[1], 2))
-            lastname[2] = toupper(substr(lastname[2], 1, 1)) tolower(substr(lastname[2], 2))
-            fields[3] = name[1] " " lastname[1] "-" lastname[2]
-        } else {
-            name[2] = toupper(substr(name[2], 1, 1)) tolower(substr(name[2], 2))
-            fields[3] = name[1] " " name[2]
-        }
+        name[2] = toupper(substr(name[2], 1, 1)) tolower(substr(name[2], 2))
+        # Change the 3rd field to new value
+        fields[3] = name[1] " " name[2]
 
         # email format: flast_name@abc.com
-        email = tolower(substr(name[1], 1, 1) name[2])
+        email = substr(name[1], 1, 1) name[2]
+        email = tolower(email)
 
         # if the email is not unique, append location id
         if (counter[email] > 1) email=email fields[2]
@@ -87,7 +88,7 @@ awk -v FS="," -v OFS="," '
 
         # Set new values for all 6 columns
         NF=6
-        for(i=1; i<=NF; i++) $i=fields[i]
+        for(i=1;i<=NF;i++) $i=fields[i]
         print
     }
 ' $file $file > $path/accounts_new.csv
