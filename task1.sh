@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-  echo "Usage: $0 patch/to/accounts.csv"
+  echo "Usage: $0 path/to/accounts.csv"
   exit 1
 fi
 
@@ -54,10 +54,12 @@ do
   full_name="${name,,}"
   count=${name_count["$full_name"]}
 
+  # Usuwanie cudzysłowów z kolumny title
+  title=$(echo "$title" | sed 's/^"//;s/"$//')
 
   email=$(generate_email "$first_name" "$surname" "$location" "$count")
 
-  echo "$id,$location,$formatted_name,$title,$email,$department" >> "$output_file"
+  echo "$id,$location,$formatted_name,\"$title\",$email,$department" >> "$output_file"
 done < "$input_file"
 
 echo "The script has finished processing. The accounts_new.csv file has been created."
