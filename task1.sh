@@ -39,9 +39,6 @@ awk -v OFS=',' '
   NR==1 { print; next }
   {
     gsub(/\r/, "");
-    for (i = 1; i <= NF; i++) {
-          gsub(/^"|"$/, "", $i)                    # Usuń otaczające cudzysłowy
-        }
     print
   }
 ' "$input_file" > "$temp_file"
