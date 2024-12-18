@@ -79,13 +79,13 @@ done < "$temp_file"
       unique_email="${base_email,,}${location}@abc.com"
     fi
 
-    # Śledzenie użycia e-maila
-    email_count["$unique_email"]=1
-
     # Jeśli email w danych wejściowych jest pusty, generujemy nowy
     if [[ -z "$email" ]]; then
       email="$unique_email"
     fi
+
+    # Śledzenie użycia e-maila
+    email_count["$unique_email"]=1
 
     # Zapis do pliku wynikowego z poprawnym formatowaniem
     printf "%s,%s,%s,%s,%s,%s\n" \
