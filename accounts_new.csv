@@ -1,7 +1,7 @@
 id,location_id,name,title,email,department
 1,1,Susan Houston,Director of Services,shouston1@abc.com,
 2,1,Christina Gonzalez,Director,cgonzalez@abc.com,
-3,2,Brenda Brown,Director,test,bbrown@abc.com,
+3,2,Brenda Brown,Director,bbrown@abc.com,
 4,3,Howard Lader,Manager,hlader@abc.com,
 5,4,Kimberly Pesavento,Commercial director,kpesavento@abc.com,
 6,5,Joe Bloom,Financial Empowerment Programs Program Director,jbloom@abc.com,
